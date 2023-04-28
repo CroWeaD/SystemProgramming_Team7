@@ -11,28 +11,30 @@
 
 /*
     Signal로 에러 발생시 수행할 행동을 설정해야겠음.
+    SIGFPE
 */
 
 #define PORT 9190
+
 #define MAX_LOBBY 20
 #define MAX_CLNT MAX_LOBBY * 4
+
 #define MAXLEN 300
 
-#define SCREEN_ROW 200
-#define SCREEN_COL 200
-#define MAX_ROW 1024
-
-typedef struct{
-    int row;
-    int col;
-    char *screen[MAX_ROW];
-}screen_data;
-
-screen_data login_screen;
+//#define SCREEN_ROW 200
+//#define SCREEN_COL 200
+//#define MAX_ROW 1024
 
 int clnt_cnt = 0;
-int clnt_socks[MAX_CLNT];
-int lobby_ports[MAX_LOBBY];
+//int clnt_socks[MAX_CLNT];
+
+typedef struct{
+    char username[MAXLEN];
+    int socket;
+    int pid;
+}Client;
+
+Client clnt_list[MAX_CLNT];
 
 //essencial
 char *server = "localhost";  //server path
@@ -49,54 +51,59 @@ MYSQL *conn = NULL;    //variable for mysql connection
 MYSQL_RES *res = NULL;  //variable for result of query  
 MYSQL_ROW row;   //real data which result from query
 
-/*
-database BlueMarble
-
-create table user_tb(
-    -> useridx int primary key auto_increment,
-    -> userid varchar(300) unique not null,
-    -> userpw varchar(300) not null,
-    -> username varchar(300) not null,
-    -> userphone varchar(300) not null,
-    -> useremail varchar(300),
-    -> regdate datetime default now()
-    -> );
-
-*/
-
 //mutex
 pthread_mutex_t mutex;
 
 //socket
 int serv_sock, clnt_sock;
 
-typedef struct{
-    int result;
-    char message[MAXLEN];
-    char id[MAXLEN];
-    char password[MAXLEN];
-}login_PACKET;
-
+//Packet
+/* Values for result */
 #define FAIL    -10
 #define SUCCESS 10
 #define QUIT    -100
 
 typedef struct{
+    char id[MAXLEN];
+    char password[MAXLEN];
+    char username[MAXLEN];
+}user_info;
+
+typedef struct{
 	char title[MAXLEN];
-	int accesible;
+	int accessible;
 	int num;
     int port;
 }Lobby;
 
-Lobby lobby_list[20];
+typedef struct{
+	int dice[2];
+    //add
+}Game;
 
-void *clnt_main(void* clnt_socket);
-void login(int clnt_socket);
+typedef struct{
+    int result;
+    char message[MAXLEN];
+    user_info info;
+    Lobby lobby;
+    Game game;
+}PACKET;
+//Lobby lobby_list[20];
+
+//Functions
 void sigint_handler(int signal, siginfo_t *siginfo, void *context);
 void client_close(int clnt_socket);
-void lobby(int clnt_socket);
+
+void *clnt_main(void* clnt_socket);
+
+int login(int clnt_socket, PACKET* packet_ptr);
+int check_duplication(char *username);
+
+void lobby(int clnt_socket, PACKET* packet_ptr);
 void room(int clnt_socket, int room);
 
+
+/* Main function */
 int main(int argc, char *argv[]){
 
     //socket
@@ -107,7 +114,10 @@ int main(int argc, char *argv[]){
     //signal
     struct sigaction handler;
     sigset_t blocked;
+    int pid = getpid(); //for evoke signal
    
+    system("clear");
+
     //0. mysql
     if((conn = mysql_init(NULL)) == NULL)
         perror("mysql_init() error!");
@@ -145,43 +155,39 @@ int main(int argc, char *argv[]){
         exit(1);
     }
         
-    
     if(listen(serv_sock, 5) == -1){
         perror("listen() error!");
         exit(1);
     }
 
+    //Debug Message
     printf("Server On!!\n");
-
-    //set lobby list
-    for(int i = 0; i < MAX_LOBBY; i++){
-        lobby_list[i].port = 9190 + (i + 1);
-        sprintf(lobby_list[i].title, "Room %d", (i + 1));
-        lobby_list[i].num = 0;
-        lobby_list[i].accesible = 1;
-    }
 
     while(1){
         clnt_adr_sz = sizeof(clnt_adr);
-        
         clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_adr, (socklen_t*) &clnt_adr_sz);
 
         pthread_mutex_lock(&mutex);
-        clnt_socks[clnt_cnt++] = clnt_sock;
+        clnt_list[clnt_cnt].pid = -1;
+        clnt_list[clnt_cnt].socket = clnt_sock;
+        strcpy(clnt_list[clnt_cnt++].username, "");
+        //clnt_socks[clnt_cnt++] = clnt_sock;
         pthread_mutex_unlock(&mutex);
 
         pthread_create(&t_id, NULL, clnt_main, (void*) &clnt_sock);
         pthread_detach(t_id);
-        printf("Log: connected client IP[%s]\n", inet_ntoa(clnt_adr.sin_addr));
+
+        printf("Log: connected client IP[%s] - Port[%d]\n", inet_ntoa(clnt_adr.sin_addr), clnt_sock);
     }
 
-    //Just in case
+    //Just in case - results error
     //mysql_free_result(res);     //free result
     //mysql_close(conn);    //close connection
     //close(serv_sock);  
     return 0;
 }
 
+//Closing Server
 void sigint_handler(int signal, siginfo_t *siginfo, void *context){
     system("clear");
 
@@ -190,74 +196,87 @@ void sigint_handler(int signal, siginfo_t *siginfo, void *context){
     //close every socket that is connected to server
     while(clnt_cnt != -1){
         pthread_mutex_lock(&mutex);
-        printf("Closing client - clnt_socks[%d]: %d\n", clnt_cnt, clnt_socks[clnt_cnt]);
-        close(clnt_socks[--clnt_cnt]);
+        printf("Closing client %s - clnt_socks[%d]: %d\n", clnt_list[clnt_cnt].username, clnt_cnt, clnt_list[clnt_cnt].socket/*clnt_socks[clnt_cnt]*/);
+        close(clnt_list[clnt_cnt--].socket /*clnt_socks[clnt_cnt--]*/);
         pthread_mutex_unlock(&mutex);
     }
 
-    if(res != NULL){
+    if(res != NULL)
         mysql_free_result(res);     //free result
-    }
-    
-    mysql_close(conn);    //close connection
+    if(conn != NULL)
+        mysql_close(conn);    //close connection
+
     close(serv_sock); 
     printf("\nServer Off\n");
     exit(0);
 }
 
+//Close a client
 void client_close(int clnt_socket){
+
+    pthread_mutex_lock(&mutex);
     for(int i = 0; i < clnt_cnt; i++){
-        if(clnt_socket == clnt_socks[i]){
-            printf("Closing client: %d\n", clnt_socks[i]);
+        if(clnt_socket == clnt_list[i].socket /*clnt_socket == clnt_socks[i]*/){
+            printf("Closing client: %d\n", clnt_list[i].socket /*clnt_socks[i]*/);
+
             while(i < clnt_cnt){
-                clnt_socks[i] = clnt_socks[i + 1];
+                clnt_list[i].socket = clnt_list[i + 1].socket;
+                strcpy(clnt_list[i].username, clnt_list[i + 1].username);
+                clnt_list[i].pid = clnt_list[i + 1].pid;
+                //clnt_socks[i] = clnt_socks[i + 1];
                 i += 1;
             }
-
             break;
         }
     }
 
+    clnt_cnt -= 1;
+    pthread_mutex_unlock(&mutex);
+    close(clnt_socket);
+
     return;
 }
 
+//Client Thread Main function
 void *clnt_main(void* clnt_socket){
     int clnt_sock = *(int*) clnt_socket;
+    PACKET packet;
 
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-    login(clnt_sock);
-    lobby(clnt_sock);
-    room(clnt_sock, 10);    //debuggin
+
+    //1. Login
+    if(login(clnt_sock, &packet) == QUIT)
+        return NULL;
+    
+    //2. Lobby
+    lobby(clnt_sock, &packet);
+    //room(clnt_sock, 10);    //debuggin
+
+    //3. Game
+
+    if(packet.result == QUIT){
+        client_close(clnt_sock);
+    }
 
     return NULL;
 }
 
-void login(int clnt_socket){
-    char id[MAXLEN], password[MAXLEN], username[MAXLEN];
+int login(int clnt_socket, PACKET* packet_ptr){
+    
     int readlen = 0;
-    login_PACKET lpacket;
+
+    query = "SELECT * FROM user_tb";
 
     while(1){
 
-        //print login screen
-        /*
-        move(10, 10);
-
-        for(int i = 10; i < login_screen.row; i++){
-            for(int j = 0; j < login_screen.col; j++){
-                printf("*");
-            }
-            printf("\n");
-        }
-        */
-        
         //get input
-        if((readlen = read(clnt_socket, &lpacket, sizeof(lpacket))) == -1)
+        if((readlen = read(clnt_socket, packet_ptr, sizeof(PACKET))) == -1)
             perror("read() error!");
 
-        if(strcmp(lpacket.id, "Q") == 0){
+        //Client Quit
+        if((packet_ptr->result == QUIT) && (strcmp(packet_ptr->message, "QUIT") == 0)){
             client_close(clnt_socket);
-            break;
+            return QUIT;
         }
         //check
         //id: 1, password: 2, username: 3
@@ -270,46 +289,73 @@ void login(int clnt_socket){
             int fields = mysql_num_fields(res);
             
             while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
-                printf("%s %s %s\n", row[1], row[2], row[3]);   //Debugging
-                if(strcmp(row[1], lpacket.id) == 0){
-                    if(strcmp(row[2], lpacket.password) == 0){
-                        strcpy(lpacket.message, row[3]);
-                        lpacket.result = SUCCESS;
-                        printf("User %s, login success!\n", row[3]);
+                printf("%s %s %s\n", row[1], row[2], row[3]);
+                if(strcmp(row[1], packet_ptr->info.id) == 0){
+                    if(strcmp(row[2], packet_ptr->info.password) == 0){
+                        //valid ID, password
+                        if(check_duplication(row[3]) == 0){
+                            strcpy(packet_ptr->info.username, row[3]);
+                            packet_ptr->result = SUCCESS;
+                            printf("User %s, login success!\n", row[3]);
 
-                        if(write(clnt_socket, &lpacket, sizeof(lpacket)) != readlen)
-                            perror("write() error!");
-                        
-                        return ;
+                            if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
+                                perror("write() error!");
+
+                            mysql_free_result(res);
+                            return SUCCESS;
+                        }
+                        else if(check_duplication(row[3]) == 1){
+                            packet_ptr->result = FAIL;
+                            strcpy(packet_ptr->message, "The user is already logged in.\n");
+                        }
                     }
+                }
+                else{
+                    strcpy(packet_ptr->message, "Wrong ID or Password. Please try again.\n");
+                    packet_ptr->result = FAIL;
                 }
             }
 
-            strcpy(lpacket.message, "Wrong ID or Password. Please try again.\n");
-            lpacket.result = FAIL;
-
-            if(write(clnt_socket, &lpacket, sizeof(lpacket)) != readlen)
+            mysql_free_result(res);
+            printf("Login Failed!\n");
+            printf("%s %s %d\n", packet_ptr->message, packet_ptr->info.username, packet_ptr->result);
+            if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
                 perror("write() error!");
         }
-
     }
-    
-    return ;
 }
 
-void lobby(int clnt_socket){
+//login duplication check
+int check_duplication(char *username){
+
+    for(int i = 0; i < clnt_cnt; i++){
+        if(strcmp(username, clnt_list[i].username) == 0){
+            return 1;   //Duplication
+        }
+    }
+
+    pthread_mutex_lock(&mutex);
+    strcpy(clnt_list[clnt_cnt].username, username);
+    clnt_cnt += 1;
+    pthread_mutex_unlock(&mutex);
+    
+    return 0;
+}
+
+void lobby(int clnt_socket, PACKET* packet_ptr){
 
     int readlen = 0;
     int i;
     Lobby ypacket;
 
+    /*
     while(1){
         if((readlen = read(clnt_socket, &ypacket, sizeof(ypacket))) == -1)
                 perror("read() error!");
 
         for(i = 0; i < MAX_LOBBY; i++){
             if(strcmp(ypacket.title, lobby_list[i].title) == 0){
-                if(lobby_list[i].accesible == 1){
+                if(lobby_list[i].accessible == 1){
                     
                     ypacket.port = lobby_list[i].port;
                     strcpy(ypacket.title, lobby_list[i].title);
@@ -318,10 +364,10 @@ void lobby(int clnt_socket){
                     ypacket.num = lobby_list[i].num;
 
                     if(lobby_list[i].num == 4){
-                        lobby_list[i].accesible = 0;
+                        lobby_list[i].accessible = 0;
                     }
 
-                    ypacket.accesible = lobby_list[i].accesible;
+                    ypacket.accessible = lobby_list[i].accessible;
 
                     if(write(clnt_socket, &ypacket, sizeof(ypacket)) != readlen)
                         perror("write() error!");
@@ -331,7 +377,7 @@ void lobby(int clnt_socket){
                 }
                 else{
                     strcpy(ypacket.title, "Full!\n");
-                    ypacket.accesible = lobby_list[i].accesible;
+                    ypacket.accessible = lobby_list[i].accessible;
                 }
             }
         }
@@ -343,6 +389,8 @@ void lobby(int clnt_socket){
         if(write(clnt_socket, &ypacket, sizeof(ypacket)) != readlen)
             perror("write() error!");
     }
+    */
+    
     
 }
 
@@ -365,7 +413,7 @@ void room(int clnt_socket, int room){
         memset(&new_serv_adr, 0, sizeof(new_serv_adr));
         new_serv_adr.sin_family = AF_INET;
         new_serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-        new_serv_adr.sin_port = htons(lobby_list[room - 1].port);
+        //new_serv_adr.sin_port = htons(lobby_list[room - 1].port);
 
         if(bind(serv_sock, (struct sockaddr*) &new_serv_adr, sizeof(new_serv_adr)) == -1){
             perror("bind() error!");

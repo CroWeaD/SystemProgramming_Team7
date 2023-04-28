@@ -8,10 +8,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <ncurses.h>
+//#include <ctime> //clock(), clock_t 
+#include<time.h>
 
-/*
-    Client 도 Quit signal로 구현하기
-*/
 
 #define SERVER_IP   "127.0.0.1"
 #define SERVER_PORT 9190
@@ -24,47 +23,85 @@
 #define LOBBY   -2
 #define GAME    -3
 
-typedef struct{
-    int result;
-    char message[MAXLEN];
-    char id[MAXLEN];
-    char password[MAXLEN];
-}login_PACKET;
+int state = LOGIN;
 
-login_PACKET lpacket;
 
 #define FAIL    -10
 #define SUCCESS 10
 #define QUIT    -100
 
 typedef struct{
+    char id[MAXLEN];
+    char password[MAXLEN];
+    char username[MAXLEN];
+}user_info;
+
+typedef struct{
 	char title[MAXLEN];
-	int accesible;
+	int accessible;
 	int num;
-    const int port;
+    int port;
 }Lobby;
 
-int state = 0;
+typedef struct{
+	int dice[2];
+    //add
+}Game;
 
-char username[MAXLEN];
+typedef struct{
+    int result;
+    char message[MAXLEN];
+    user_info info;
+    Lobby lobby;
+    Game game;
+}PACKET;
+
+PACKET packet;
+
+user_info cur_user = {"", "", ""};
+//char username[MAXLEN];
+
+//Client Socket
+int sock;
+
+clock_t delay = CLOCKS_PER_SEC;
+
+//Functions
+void sigint_handler(int signal, siginfo_t *siginfo, void *context);
 
 void* screen_handler(void* arg);
+void screen_init();
 void* login(void* arg);
 void* lobby(void* arg);
 
+//Main Function
 int main(int argc, char *argv[]){
 
     pthread_t screen_thread, login_thread, lobby_thread;
     void* result;
 
-    int sock;
+    //signal
+    struct sigaction handler;
+    sigset_t blocked;
+
     struct sockaddr_in serv_addr;
 
-    //1. signal
+    //1. signal handling
+    handler.sa_sigaction = sigint_handler;
+    handler.sa_flags = SA_SIGINFO;
+
+    sigemptyset(&blocked);
+    sigaddset(&blocked, SIGQUIT);   //block just in case
+
+    handler.sa_mask = blocked;
+
+    if(sigaction(SIGINT, &handler, NULL) == -1)
+        perror("sigaction() error!");
     signal(SIGQUIT, SIG_IGN);
 
     //2. ncurses
-
+    initscr();
+    clear();
 
     //3. socket
     sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -88,7 +125,10 @@ int main(int argc, char *argv[]){
         perror("pthread_create() error!");
     if(pthread_join(login_thread, &result) != 0)    //wait for login thread to end
         perror("pthread_join() error!"); 
-    if(*(int*)result == FAIL){  //QUIT
+    
+    /*
+    //changed to signal handling
+    if(*(int*)result == QUIT){  //QUIT
         pthread_cancel(screen_thread);
         close(sock);
         printf("Client Quit!\n");
@@ -97,9 +137,11 @@ int main(int argc, char *argv[]){
     else if(*(int*)result == SUCCESS){
         //start lobby
         state = LOBBY;
+        clear();
         printf("Lobby Screen!!\n");
     }
-
+    */
+    
     //game 끝나고 lobby 로 돌아가는 것 구현하기
 
     //(2) lobby
@@ -108,7 +150,9 @@ int main(int argc, char *argv[]){
     if(pthread_join(lobby_thread, &result) != 0)    //wait for login thread to end
         perror("pthread_join() error!"); 
 
+    /*
     //result will be port #
+    
     close(sock);
     
     //new connect
@@ -123,40 +167,137 @@ int main(int argc, char *argv[]){
         perror("connect() error!");
     
     printf("New server %d\n", *(int*) result);
+    */
+    
+    
+    
 
     state = GAME;
     //(3) game
 
-
+    state = QUIT;
+    endwin();
     close(sock);
     free(result);
     return 0;
 }
 
+//Closing Client
+void sigint_handler(int signal, siginfo_t *siginfo, void *context){
+    clear();
+    //printf("Quit!\n");
+    endwin();
+
+    state = QUIT;       //for screen thread cancelation
+    packet.result = QUIT;
+    strcpy(packet.message,"QUIT");
+    write(sock, &packet, sizeof(PACKET));
+    close(sock);
+    exit(0);
+}
+
 void* screen_handler(void* arg){
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);   //cancel immediately
 
-    //4. ncurses
-    //initscr();
-    //clear();
+    clock_t st;
 
-    while(1){
+    char *loginscreen[MAXLEN] = {
+        "**************************************\n",
+        "* [ Login ]                          *\n",
+        "*            +--------------------+  *\n",
+        "*   ID       |                    |  *\n", //+15
+        "*            +--------------------+  *\n",
+        "*                                    *\n",
+        "*            +--------------------+  *\n",
+        "*   Password |                    |  *\n",
+        "*            +--------------------+  *\n",
+        "**************************************\n"  //len 10
+    };
+
+    int login_len = 10;//strlen(loginscreen);  
+    int id_point[] = {3, 15};
+    int pw_point[] = {7, 15};
+
+    char *lobbyscreen[MAXLEN] = {
+        "**************************************\n",
+        "*                                    *\n",
+        "*                                    *\n",
+        "**************************************\n"
+    };
+
+    //int lobby_len = strlen(loginscreen);  
+    int lobby_row = 1;
+
+    while(state != QUIT){
         switch(state){
 
             case LOGIN:
+                //print login screen
+                clear();
+                move(10, 10);
+                for(int i = 0; i < login_len; i++){
+                    addstr(loginscreen[i]);
+                    move((10 + (i + 1)), 10);
+                }
+                refresh();
+
+                move(id_point[0] + 10, id_point[1] + 10);
+
+                while(strcmp(packet.info.id, "") == 0)    //conditions
+                    ;
+                
+                move(pw_point[0] + 10, pw_point[1] + 10);
+
+                while(strcmp(packet.info.password, "") == 0)    //conditions
+                    ;
+
+                st = clock();
+
+                while (clock() - st < delay) 
+                ;  
+
+                if(packet.result == SUCCESS){
+                    state = LOBBY;
+
+                    st = clock();
+                    while (clock() - st < (delay * 4)) 
+                    ;  
+                }
+                else if(packet.result == FAIL){
+                    clear();
+                    move(10, 10);
+                    addstr(packet.message);
+                    refresh();
+
+
+                    st = clock();
+                    while (clock() - st < (delay * 2)) 
+                    ;  
+                }
                 break;
+
             case LOBBY:
+                clear();
+                move(10, 10);
+                for(int i = 0; i < 4; i++){
+                    addstr(lobbyscreen[i]);
+                    move((10 + (i + 1)), 10);
+                }
+                refresh();
+
+                st = clock();
+
+                while (clock() - st < (delay * 3)) 
+                ;  
+
                 break;
+
             case GAME:
                 break;
         }
     }
 
     return NULL;
-}
-
-void login_screen(){
-    
 }
 
 void* login(void* arg){
@@ -166,42 +307,52 @@ void* login(void* arg){
     int *result;
     result = malloc(sizeof(int));
 
-    while(1){
-        system("clear");
-        printf("ID: ");
-        scanf("%s", lpacket.id);
-        printf("Password: ");
-        scanf("%s", lpacket.password);
+    while(state != QUIT){
 
+        strcpy(packet.info.id, "");
+        strcpy(packet.info.password, "");
+
+        scanw("%s", packet.info.id);
+        scanw("%s", packet.info.password);
+
+        /*
         if(strcmp(lpacket.id, "Q") == 0){
             *result = FAIL;
             write(serv_sock, &lpacket, sizeof(lpacket));    //quit 처리하기
             return (void*) result;
         }
+        */
 
-        write(serv_sock, &lpacket, sizeof(lpacket));
+        packet.result = 0;
 
-        if((readlen = read(serv_sock, &lpacket, sizeof(lpacket))) == -1)
+        write(serv_sock, &packet, sizeof(PACKET));
+
+        if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
 
-        if(lpacket.result == SUCCESS){
-            strcpy(username, lpacket.message);
-            *result = lpacket.result;
+        if(packet.result == SUCCESS){
+            strcpy(cur_user.username, packet.info.username);
+            *result = packet.result;
 
-            printf("Wellcome %s!\n", username);
-            sleep(3);
+            clear();
+            move(10, 10);
+            addstr("Welcome!");
+            refresh();
 
             return (void*) result;
         }
-        else if(lpacket.result == FAIL){
-            printf("%s", lpacket.message);
+        else if(packet.result == FAIL){
+            /*
+            clear();
+            move(10, 10);
+            addstr(packet.message);
+            refresh();
+            */
         }
-
-        sleep(5);
     }
 
-    //result = -1;    //QUIT
-    //return result;
+    *result = QUIT;    //QUIT
+    return (void*) result;
 }
 
 void* lobby(void* arg){
@@ -216,7 +367,7 @@ void* lobby(void* arg){
 
     //select lobby
 
-    while(1){
+    while(state != QUIT){
         printf("Input Lobby number : ");
         scanf("%d", &lobbynum);
 
@@ -235,7 +386,7 @@ void* lobby(void* arg){
             }
             else{
                 //in room
-                printf("In %s, num: %d, port: %d, accessible: %d\n", ypacket.title, ypacket.num, ypacket.port, ypacket.accesible);
+                printf("In %s, num: %d, port: %d\n", ypacket.title, ypacket.num, ypacket.port);
                 *result = SUCCESS;
                 return (void*) result;
             }
@@ -246,8 +397,5 @@ void* lobby(void* arg){
         }
     }
 
-
-
-    
-
+    return NULL;
 }
