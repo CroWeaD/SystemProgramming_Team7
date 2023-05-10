@@ -347,7 +347,7 @@ void arrived_city(int type, int curr_pos) {
             }
         }
     }
-int temp = 0;
+    int temp = 0;
     if(squares[curr_pos].owner == currentPlayer || squares[curr_pos].owner == -1) {                    // 본인의 도시일 경우 or 주인 없는 도시일 경우
         printf("type: %d\n", type);
         printf("buildings: %d\n", squares[curr_pos].buildings);
