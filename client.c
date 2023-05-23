@@ -12,7 +12,7 @@
 #include <time.h>
 #include "packet.h"
 #include <sys/time.h>
-
+//#include "screen_handler.c"
 
 enum states {LOGIN, LOBBY, ROOM, GAME};
 int state = LOGIN;
@@ -28,7 +28,7 @@ user_info cur_user = {"", "", ""};
 int pid;  //client pid
 
 //lobby
-int lobby_row = 0;
+int lobby_row = 1;
 
 int sock;
 
@@ -89,9 +89,9 @@ int main(int argc, char *argv[]){
         if(pthread_join(lobby_thread, &result) != 0)    //wait for login thread to end
             perror("pthread_join() error!"); 
 
-        state = LOBBY;
-
-        stop_wait(10);
+        //state = LOBBY;
+        state = QUIT;
+        //stop_wait(10);
     }
 
     state = QUIT;
@@ -206,13 +206,13 @@ void* screen_handler(void* arg){
             case LOGIN:
                 //print login screen
                 clear();
-                move(default_row , default_col);
+                move(default_row, default_col);
 
                 for(int i = 0; i < login_len; i++){
                     addstr(loginscreen[i]);
                     move((default_row  + (i + 1)), default_col);
                 }
-                stop_wait(0.5);
+                stop_wait(0.05);
                 refresh();
 
                 move(default_row + id_point[0], default_col + id_point[1]);
@@ -225,11 +225,15 @@ void* screen_handler(void* arg){
                 while(strcmp(packet.info.password, "") == 0)    //conditions
                     ;
                 echo();
-                stop_wait(1);   //for sync
+                stop_wait(0.5);   //for sync
 
                 if(packet.result == SUCCESS){
                     state = LOBBY;
-                    stop_wait(4);
+                    clear();
+                    move(default_row , default_col);
+                    addstr("Welcome!");
+                    refresh();
+                    stop_wait(2);
                 }
                 else if(packet.result == FAIL){
                     clear();
@@ -249,29 +253,29 @@ void* screen_handler(void* arg){
                     move(default_row, default_col);
                     addstr(lobbyscreen[0]);
 
-                    for(int i = 0; i < MAX_LOBBY; i ++){
+                    for(int i = 1; i <= MAX_LOBBY; i++){
                         if(i == lobby_row){
                             standout();
                         }
 
-                        sprintf(lobbyscreen[i],"* %2d | %8s                | %d/4 *\n", packet.lobby_List[i].id, packet.lobby_List[i].title, packet.lobby_List[i].users);
-                        move(default_row + i + 1, default_col);
+                        sprintf(lobbyscreen[i],"* %2d | %8s                | %d/4 *\n", packet.lobby_List[i - 1].id, packet.lobby_List[i - 1].title, packet.lobby_List[i - 1].users);
+                        move(default_row + i, default_col);
                         addstr(lobbyscreen[i]);
 
                         if(i == lobby_row){
                             standend();
                         }
                     }
-                    move(default_row + MAX_LOBBY + 2, default_col);
+                    move(default_row + MAX_LOBBY + 1, default_col);
                     addstr(lobbyscreen[21]);
+
                     getlobbydata = NO;
-                    stop_wait(0.5);
+                    stop_wait(0.05);
                     refresh();
                 }
 
                 if(packet.result == SUCCESS){
-                    state = GAME;
-                    stop_wait(2);
+                    state = ROOM;
                 }
                 /*
                 else if(packet.result == FAIL){
@@ -284,24 +288,31 @@ void* screen_handler(void* arg){
                 */
                 
                 break;
+
             case ROOM:
-                sprintf(temp_str, "%s %d/4\n", packet.lobby_List[lobby_row].title, packet.lobby_List[lobby_row].users);
+                clear();
+                sprintf(temp_str, "%s %d/4\n", packet.lobby_List[packet.lobby_idx].title, packet.lobby_List[packet.lobby_idx].users);
                 move(default_row, default_col);
                 addstr(temp_str);
-                stop_wait(0.5);
+                stop_wait(0.05);
                 refresh();
                 
                 break;
 
             case GAME:
-                sprintf(temp_str, "New server %d\n", packet.lobby_List[lobby_row].port);
-                addstr(temp_str);
-                refresh();
+                //stop_wait(2); 
+                //clear();
+                //sprintf(temp_str, "New server %d\n", packet.lobby_List[lobby_row].port);
+                //addstr(temp_str);
+                //refresh();
                 //stop_wait(2);
-                stop_wait(10); 
+                stop_wait(1); 
+                char temp_str[MAXLEN];
                 clear();
-                move(10, 10);
-                addstr("GAME!!");
+                sprintf(temp_str, "%s %d/4\n", packet.lobby_List[packet.lobby_idx].title, packet.lobby_List[packet.lobby_idx].users);
+                move(13, 10);
+                addstr(temp_str);
+                stop_wait(4);
                 refresh();
                 break;
         }
@@ -335,22 +346,15 @@ void* login(void* arg){
         if(packet.result == SUCCESS){
             strcpy(cur_user.username, packet.info.username);
             *result = packet.result;
-
-            clear();
-            move(10, 10);
-            addstr("Welcome!");
-            refresh();
+            stop_wait(2);
 
             return (void*) result;
         }
+        /*
         else if(packet.result == FAIL){
-            /*
-            clear();
-            move(10, 10);
-            addstr(packet.message);
-            refresh();
-            */
+            
         }
+        */
     }
 
     *result = QUIT;    //QUIT
@@ -363,18 +367,38 @@ int room(int serv_sock){
     int readlen = 0;
 
     while(state != QUIT){
-        //write(serv_sock, &packet, sizeof(PACKET));
+       
+       /*
+       noecho();
+        char key = getchar();//getch();
+        echo();
 
-        if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
+        if(key == 'r' || key == 'R'){
+            addstr("Ready");
+            refresh();
+            strcpy(packet.message, "Ready");
+
+            write(serv_sock, &packet, sizeof(PACKET));
+
+            if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
+                perror("read() error!");
+        }
+       */
+        
+        
+       if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
-
+        
         if(packet.result == SUCCESS){
             result = packet.result;
 
             clear();
             move(10, 10);
             addstr("Let's start the game!");
+            stop_wait(0.5);
             refresh();
+
+            state = GAME;
 
             return result;
         }
@@ -412,7 +436,7 @@ void* lobby(void* arg){
 
     getlobbydata = YES;
 
-    stop_wait(1);
+    stop_wait(0.5);
 
     //select lobby
     while(state != QUIT){
@@ -422,24 +446,32 @@ void* lobby(void* arg){
         char key = getchar();//getch();
         echo();
 
-        if((key == 'w') && lobby_row > 0){
+        if(key == 'w'){
             //Up
-            addstr("Up");
-            refresh();
-            lobby_row -= 1;
+            //addstr("Up");
+            //refresh();
+            if(lobby_row > 0)
+                lobby_row -= 1;
+            else
+                lobby_row = 1;
+
             getlobbydata = YES;
         }
-        else if((key == 's') && lobby_row < 20){
+        else if(key == 's'){
             //Down
-            addstr("Down");
-            refresh();
-            lobby_row += 1;
+            //addstr("Down");
+            //refresh();
+            if(lobby_row <= 20)
+                lobby_row += 1;
+            else
+                lobby_row = 20;
+
             getlobbydata = YES;
         }
         else if(key == '\r'){
             addstr("Enter!");
             refresh();
-            packet.lobby_idx = lobby_row;
+            packet.lobby_idx = (lobby_row - 1);
             write(serv_sock, &packet, sizeof(PACKET));
 
             if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
@@ -447,7 +479,7 @@ void* lobby(void* arg){
 
             getlobbydata = YES;
 
-            if(strcmp(packet.message, "Full!\n") == 0){
+            if(strcmp(packet.message, "Not accessible!\n") == 0){
                 //printf("%s", packet.lobby.title);
             }
             else if(strcmp(packet.message, "Wrong Input\n") == 0){
@@ -456,9 +488,9 @@ void* lobby(void* arg){
             else{
                 //in room
                 //printf("In %s, num: %d, port: %d\n", packet.lobby.title, packet.lobby.users, packet.lobby.port);
-                clear();
-                addstr(packet.lobby_List[lobby_row].title);
-                refresh();
+                //clear();
+                //addstr(packet.lobby_List[lobby_row].title);
+                //refresh();
 
                 *result = room(serv_sock);
                 
@@ -467,51 +499,15 @@ void* lobby(void* arg){
                     return (void*) result;
             }
 
-            stop_wait(0.5);
-        }
-
-        /*
-        if(lobbynum > 0 && lobbynum < MAX_LOBBY){
-
-            packet.lobby_List.id = lobbynum;
-
-            write(serv_sock, &packet, sizeof(PACKET));
-
-            if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
-                perror("read() error!");
-
-            getlobbydata = YES;
-
-            if(strcmp(packet.lobby.title, "Full!\n") == 0){
-                printf("%s", packet.lobby.title);
-            }
-            else if(strcmp(packet.lobby.title, "Wrong Input\n") == 0){
-
-            }
-            else{
-                //in room
-                //printf("In %s, num: %d, port: %d\n", packet.lobby.title, packet.lobby.users, packet.lobby.port);
-                clear();
-                addstr(packet.lobby.title);
-                refresh();
-                
-                *result = SUCCESS;
-                return (void*) result;
-            }   
-        }
-        else{
-            printf("Wrong Input!\n");
-        }
-        */
-        
-
+            stop_wait(0.05);
+        }        
     }
 
     return NULL;
 }
 
 void sigalrm_handler(int s){
-    packet.lobby_idx = -1;
+    //packet.lobby_idx = -1;
     write(sock, &packet, sizeof(PACKET));
 
     if((read(sock, &packet, sizeof(PACKET))) == -1)
@@ -533,7 +529,10 @@ void* game(void* arg){
     memset(&game_addr, 0, sizeof(game_addr));
     game_addr.sin_family = AF_INET;
     game_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    game_addr.sin_port = htons(packet.lobby_List[lobby_row].port);
+    game_addr.sin_port = htons(packet.lobby_List[packet.lobby_idx].port);
+
+    stop_wait((2 + rand() % 4) / 2);
+    //stop_wait(3);
 
     if(connect(*game_sock, (struct sockaddr*) &game_addr, sizeof(game_addr)) == -1)
         perror("connect() error!");
@@ -543,6 +542,10 @@ void* game(void* arg){
 
         if((readlen = read(*game_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
+
+        if(packet.result == QUIT){
+            state = QUIT;
+        }
     }
 
     return NULL;
