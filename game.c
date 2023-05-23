@@ -88,8 +88,7 @@ int main(int argc, char* argv[]) {
             perror("accept");
         }
     }
-
-    setSock(serv_sock, clnt_sock);
+	
     set_up(playerNum);
 
     while(1) {
