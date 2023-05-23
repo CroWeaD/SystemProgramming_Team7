@@ -158,7 +158,7 @@ void sendUseVoucher(int playerNum, int currPlayer) {
         packing2Send(i, 20, currPlayer, data);
 }
 //type 21
-void sendLandBuyResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash) {
+void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash) {
     int data[10] = {0,};
     data[0] = curr_pos; data[1] = currPlayer; data[2] = price; data[3] = building_info; data[4] = playerCash;
     for(int i=0; i<playerNum; i++)

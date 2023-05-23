@@ -392,7 +392,7 @@ void arrived_city(int type, int curr_pos) {
                 total_price += construction(receipt, currPlayer, curr_pos, HOTEL, B_HOTEL);
 
                 /*SEND PACKET*/
-                sendLandBuyResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
+                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
                 /*RECV PACKET*/
                 recvPack(playerNum, currPlayer);
             }
@@ -406,7 +406,7 @@ void arrived_city(int type, int curr_pos) {
                 int receipt = recvPack(1, currPlayer);
                 total_price += construction(receipt, currPlayer, curr_pos, LAND, B_LAND);
                 /*SEND PACKET*/
-                sendLandBuyResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
+                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
                 /*RECV PACKET*/
                 recvPack(playerNum, currPlayer);
             }
