@@ -3,6 +3,7 @@
 Game_Recv recv_packet[4];
 
 int recvPack(int playerNum, int clnt) {
+    int result = 0;
     for(int i=0; i<playerNum; i++) {
         memset(&recv_packet[i], 0, sizeof(recv_packet[i]));
         read(clnt_sock[i], (void*)&recv_packet[i], sizeof(recv_packet[i]));
@@ -12,8 +13,10 @@ int recvPack(int playerNum, int clnt) {
         int data = recv_packet[i].data[0];
         printf("[recv] player: %d, type: %d\n", i, type);
         switch(type) {
-            case 0: return 1;
-            case 1: case 2: case 3: case 4: return data;
+            case 0: 
+                result = 1; break;
+            case 1: case 2: case 3: case 4:  
+                result = data;  break;
             default:
                 printf("invalid type");
                 close(clnt_sock[i]);

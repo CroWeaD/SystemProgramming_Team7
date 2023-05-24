@@ -168,6 +168,7 @@ void start_turn() {
             curr_pos = move_player(die1 + die2);
             /*SEND PACKET*/
             sendIslandDiceResult(playerNum, currPlayer, die1, die2, players[currPlayer].pos);
+
             /*RECV PACKET*/
             recvPack(playerNum, currPlayer);
 
