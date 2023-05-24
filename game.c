@@ -189,7 +189,7 @@ void start_turn() {
         sendWhere2Travel(playerNum, currPlayer);
         /*RECV PACKET*/
         int travel = recvPack(playerNum, currPlayer);
-        
+        travel -= SPACE_TRAVEL_SQR;
         curr_pos = move_player(travel);
         /*SEND PACKET*/
         sendTravelResult(playerNum, currPlayer, curr_pos, players[currPlayer].cash);
