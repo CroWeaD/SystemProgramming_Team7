@@ -62,5 +62,5 @@ void sendDonation(int playerNum, int currPlayer, int donation, int fund, int pla
 void sendBankruptcy(int playerNum, int currPlayer, int winner);
 void sendAskVoucher(int playerNum, int currPlayer);
 void sendUseVoucher(int playerNum, int currPlayer);
-void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash);
+void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash, int toll);
 

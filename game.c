@@ -393,9 +393,10 @@ void arrived_city(int type, int curr_pos) {
                 total_price += construction(receipt, currPlayer, curr_pos, VILLA, B_VILLA);
                 total_price += construction(receipt, currPlayer, curr_pos, BUILDING, B_BUILDING);
                 total_price += construction(receipt, currPlayer, curr_pos, HOTEL, B_HOTEL);
-
+                
+                int changed_toll = cal_toll(curr_pos);
                 /*SEND PACKET*/
-                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
+                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash, changed_toll);
                 /*RECV PACKET*/
                 recvPack(playerNum, currPlayer);
             }
@@ -408,8 +409,9 @@ void arrived_city(int type, int curr_pos) {
                 // 건물 구입
                 int receipt = recvPack(playerNum, currPlayer);
                 total_price += construction(receipt, currPlayer, curr_pos, LAND, B_LAND);
+                int changed_toll = cal_toll(curr_pos);
                 /*SEND PACKET*/
-                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
+                sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash, changed_toll);
                 /*RECV PACKET*/
                 recvPack(playerNum, currPlayer);
             }
