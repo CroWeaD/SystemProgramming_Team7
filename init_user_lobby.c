@@ -5,7 +5,7 @@
 //essential
 char *server = "localhost";  //server path
 char *user = "root";    //user name
-char *password = "sinanju.237"; //password of the user
+char *password = "1q2w3e4r@@"; //password of the user
 
 //optional
 char *database = "BlueMarble";  //DataBase name

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include "game.h"
 #include <mysql.h>      //gcc option $(mysql_config --libs --cflags)
 //gcc server.c -o server -I/opt/homebrew/Cellar/mysql/8.0.33/include/mysql -L/opt/homebrew/Cellar/mysql/8.0.33/lib -lmysqlclient -L/opt/homebrew/opt/openssl@1.1/lib -lssl -lcrypto -lresolv
 /*
@@ -203,7 +204,7 @@ void mysql_initialization(){
     //essencial
     char *server = "localhost";  //server path
     char *user = "root";    //user name
-    char *password = "sinanju.237"; //password of the user
+    char *password = "1q2w3e4r@@"; //password of the user
 
     //optional
     char *database = "BlueMarble";  //DataBase name
@@ -455,6 +456,7 @@ void *game_maker(void* arg){
             printf("Game!\n");
             fflush(stdout);
 
+            start_game(cnt,game_clnt_list);
             //game();
             //Debug
 

@@ -55,7 +55,7 @@ typedef struct{
     //add
 }Game_Recv;
 
-typedef struct{
+typedef struct PACKET{
     int result;
     char message[MAXLEN];
     int status;

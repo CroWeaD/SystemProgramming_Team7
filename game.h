@@ -53,6 +53,7 @@ typedef struct Player {
     bool passed_startpoint;     // 시작점 지났는지 여부
 } Player;
 
+void start_game(int pnum, int clnt[4]);
 void set_up();
 void start_turn();
 void roll_dice(int doubleNum);

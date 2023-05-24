@@ -39,18 +39,18 @@ Player players[4] = {
     {0, -1, -1, 0, false, false, false, false, false}
 };
 
-static int state;                      // ?
-static int currPlayer;                 // 현재 player
-static int playerNum = 2;              // player 수
-static int social_fund;                // 사회복지기금
+static int state;                  // 0: end, 1: continue
+static int currPlayer;             // 현재 player
+static int playerNum;              // player 수
+static int social_fund;            // 사회복지기금
 
-int serv_sock;
 int clnt_sock[4];
 
-int main(int argc, char* argv[]) {
-    
+void start_game(int pnum, int clnt[4]) {
+
+    /*
     int temp_port = 8080;       // 임시 PORT
-    playerNum = 2;              // player 수
+     playerNum = 2;              // player 수
     int opt = 1;
 
     struct sockaddr_in serv_addr;
@@ -88,10 +88,15 @@ int main(int argc, char* argv[]) {
             perror("accept");
         }
     }
-	
+	*/
+
+    playerNum = pnum;
+    for(int i=0; i<playerNum; i++)
+        clnt_sock[i] = clnt[i];
+        
     set_up(playerNum);
 
-    char name0[10] = "messi", name1[10] = "ronaldo", name2[10] = "", name3[10]="";
+    char name0[10] = "messi", name1[10] = "ronaldo", name2[10] = "mbappe", name3[10]="haland";
     for(int i=0; i<playerNum; i++)
         sendName(playerNum, i, name0, name1, name2, name3);
 
@@ -102,6 +107,7 @@ int main(int argc, char* argv[]) {
         // 턴 넘기기
         currPlayer = (currPlayer + 1) % playerNum;
         /*-------------------------------------------------------------------*/
+        if(state==0)    break;
         sleep(1);
         /*-------------------------------------------------------------------*/
     }
@@ -110,6 +116,7 @@ int main(int argc, char* argv[]) {
 
 void set_up(int num) {
     srand(time(NULL));
+    state = 1;
     currPlayer = 0;
     for(int i=0; i<num; i++) {
         players[i].pos = START;
@@ -339,8 +346,10 @@ void arrived_city(int type, int curr_pos) {
                         checkBitsSet(owner_bitmask, sell_bitmask, currPlayer);
                         players[squares[curr_pos].owner].cash += total_toll;
                         players[currPlayer].cash -= total_toll;
-                        if(players[currPlayer].cash<0)
+                        if(players[currPlayer].cash<0) {
                             bankruptcy(currPlayer);
+                            return;
+                        }
 
                         /*SEND PACKET*/
                         sendLandSellResult(playerNum, currPlayer, sell_bitmask, players[currPlayer].cash);
@@ -358,6 +367,7 @@ void arrived_city(int type, int curr_pos) {
 
                         players[currPlayer].cash -= total_toll;
                         bankruptcy(currPlayer);
+                        return;
                     }
                 }
             }
@@ -527,12 +537,7 @@ void bankruptcy(int p) {
     /*RECV PACKET*/
     recvPack(playerNum, currPlayer);
 
-    close(serv_sock);
-    close(clnt_sock[0]);
-    close(clnt_sock[1]);
-    close(clnt_sock[2]);
-    close(clnt_sock[3]);
-    exit(1);
+    state = 0;
 }
 
 void trading(int curr_pos, int total_price, int seller, int buyer) {

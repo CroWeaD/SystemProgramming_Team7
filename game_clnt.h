@@ -144,5 +144,6 @@ void simpleMessage(wchar_t* msg, wchar_t* okayMessage);
 int checkTravel(int price);
 void yourTurn();
 
+void mainLoop(int serv_socket);
 void startGame(int player, int pcount);
 void endGame();
