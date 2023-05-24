@@ -21,7 +21,7 @@ Square squares[TOTAL_SQR] = {
     {2, 0, -1, {0,}, {0,}},                                                                      // 황금열쇠
     {1, 14, -1, {0,0,0,50*TUSD}, {0,0,0,60*TUSD}},                                               // 부산
     {0, 0, -1, {75*TUSD, 45*TUSD, 15*TUSD, 26*TUSD}, {115*TUSD, 80*TUSD, 11*TUSD, 2.2*TUSD}},    // 하와이
-    {1, 0, -1, {0,0,0,30*TUSD}, {0,0,0,25*TUSD}},                                                // 퀸 엘리자베스호
+    {1, 14, -1, {0,0,0,30*TUSD}, {0,0,0,25*TUSD}},                                               // 퀸 엘리자베스호
     {0, 0, -1, {75*TUSD, 45*TUSD, 15*TUSD, 26*TUSD}, {115*TUSD, 80*TUSD, 11*TUSD, 2.2*TUSD}},    // 마드리드
     {3, 0, -1, {0,}, {0,0,0,20*TUSD}},                                                           // 우주여행
     {0, 0, -1, {100*TUSD, 60*TUSD, 20*TUSD, 30*TUSD}, {127*TUSD, 90*TUSD, 13*TUSD, 2.6*TUSD}},   // 도쿄
@@ -113,8 +113,7 @@ void set_up(int num) {
     currPlayer = 0;
     for(int i=0; i<num; i++) {
         players[i].pos = START;
-        players[i].cash = 330*TUSD;
-        if(num==2)  players[i].cash *= 2;
+        players[i].cash = 660*TUSD;
     }
 }
 
@@ -193,8 +192,7 @@ void start_turn() {
         
         curr_pos = move_player(travel);
         /*SEND PACKET*/
-        sendSync(playerNum, currPlayer, players[0].pos, players[1].pos, players[3].pos, players[4].pos,
-                players[0].cash, players[1].cash, players[2].cash, players[3].cash);
+        sendTravelResult(playerNum, currPlayer, curr_pos, players[currPlayer].cash);
         /*RECV PACKET*/
         recvPack(playerNum, currPlayer);
 
@@ -283,7 +281,7 @@ void arrived_city(int type, int curr_pos) {
             sendAskVoucher(playerNum, currPlayer);
             printf("우대권이 있습니다. 사용하시겠습니까?: ");
             /*RECV PACKET*/
-            // 우대권 사용 여부 받기
+            // 우대권 사용 여부 
              int use_voucher = recvPack(playerNum, currPlayer);
 
             // 우대권 사용할 경우
@@ -464,7 +462,7 @@ void arrived_etc() {
                 players[squares[SPACE_TRAVEL_SQR].owner].cash += squares[SPACE_TRAVEL_SQR].toll[LAND];
                 players[currPlayer].paid_for_sship = true;
                 /*SEND PACKET*/
-                sendPayResult(playerNum, currPlayer, squares[SPACESHIP].owner, squares[SPACESHIP].toll[LAND], 
+                sendPayResult(playerNum, currPlayer, squares[SPACESHIP].owner, squares[SPACE_TRAVEL_SQR].toll[LAND], 
                             (squares[SPACESHIP].owner != -1 ? players[squares[SPACESHIP].owner ].cash : -1), players[currPlayer].cash);
                 /*RECV PACKET*/
                 recvPack(playerNum, currPlayer);
@@ -567,5 +565,5 @@ int construction(int receipt, int currPlayer, int curr_pos, int building_type,  
         return 0;
     squares[curr_pos].buildings |= building_bit;
     trading(curr_pos, squares[curr_pos].price[building_type], -1, currPlayer);
-   return squares[curr_pos].price[building_type];
+    return squares[curr_pos].price[building_type];
 }

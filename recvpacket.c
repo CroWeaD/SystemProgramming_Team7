@@ -11,7 +11,7 @@ int recvPack(int playerNum, int clnt) {
 
         int type = recv_packet[i].type;
         int data = recv_packet[i].data[0];
-        printf("[recv] player: %d, type: %d\n", i, type);
+        printf("[recv] player: %d, type: %d, data: %d\n", i, type, data);
         switch(type) {
             case 0: 
                 result = 1; break;

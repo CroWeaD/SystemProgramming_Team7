@@ -28,7 +28,6 @@ typedef struct Game_Send {
 // 수신 패킷
 typedef struct Game_Recv {
     int type;
-    int player;
     int data[2];
 } Game_Recv;
 
@@ -42,7 +41,7 @@ void packing2Send(int clnt, int type, int player, int* data);
 
 // SEND PACKET
 void sendName(int playerNum, int currPlayer, char* name1, char* name2, char* name3, char* name4);
-void sendSync(int playerNum, int currPlayer, int p1Pos, int p2Pos, int p3Pos, int p4Pos, int p1Cash, int p2Cash, int p3Cash, int p4Cash);
+void sendTravelResult(int playerNum, int currPlayer, int moveto, int playerCash);
 void sendDiceWait(int playerNum, int currPlayer);
 void sendDiceResult(int playerNum, int currPlayer, int die1, int die2, int moveto, int doubleNum, int playerCash);
 void sendDouble3Time(int playerNum, int currPlayer, int moveto);
@@ -63,4 +62,4 @@ void sendBankruptcy(int playerNum, int currPlayer, int winner);
 void sendAskVoucher(int playerNum, int currPlayer);
 void sendUseVoucher(int playerNum, int currPlayer);
 void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash, int toll);
-
+void sendLandSellResult(int playerNum, int currPlayer, int sellLand, int playerCash);

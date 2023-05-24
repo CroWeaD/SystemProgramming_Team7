@@ -24,11 +24,9 @@ void sendName(int playerNum, int currPlayer, char* name0, char* name1, char* nam
 }
 
 //type 0
-void sendSync(int playerNum, int currPlayer, int p1Pos, int p2Pos, int p3Pos, int p4Pos, 
-            int p1Cash, int p2Cash, int p3Cash, int p4Cash) {
+void sendTravelResult(int playerNum, int currPlayer, int moveto, int playerCash) {
     int data[10] = {0,};
-    data[0] = p1Pos; data[1] = p2Pos; data[2] = p3Pos; data[3] = p4Pos;
-    data[4] = p1Cash; data[5] = p2Cash; data[6] = p3Cash; data[7] = p4Cash;
+    data[0] = currPlayer; data[1] = moveto; data[2] = playerCash;
     for(int i=0; i<playerNum; i++)
         packing2Send(i, 0, currPlayer, data);
 }
