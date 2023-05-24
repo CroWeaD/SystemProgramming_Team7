@@ -165,10 +165,10 @@ void start_turn() {
         printf("die1: %d, die2: %d\n", die1, die2);
 
         if(die1 == die2) {  // 더블일 경우
+
             curr_pos = move_player(die1 + die2);
             /*SEND PACKET*/
             sendIslandDiceResult(playerNum, currPlayer, die1, die2, players[currPlayer].pos);
-
             /*RECV PACKET*/
             recvPack(playerNum, currPlayer);
 
@@ -192,6 +192,12 @@ void start_turn() {
         int travel = recvPack(playerNum, currPlayer);
         
         curr_pos = move_player(travel);
+        /*SEND PACKET*/
+        sendSync(playerNum, currPlayer, players[0].pos, players[1].pos, players[3].pos, players[4].pos,
+                players[0].cash, players[1].cash, players[2].cash, players[3].cash);
+        /*RECV PACKET*/
+        recvPack(playerNum, currPlayer);
+
         players[currPlayer].paid_for_sship = false;
         arrived_square(curr_pos);
     } else {
@@ -475,11 +481,6 @@ int move_player(int move) {
     }
     players[currPlayer].pos = (players[currPlayer].pos + move) % TOTAL_SQR;
     printf("position: %d\n", players[currPlayer].pos);
-    /*SEND PACKET*/
-    sendSync(playerNum, currPlayer, players[0].pos, players[1].pos, players[3].pos, players[4].pos,
-            players[0].cash, players[1].cash, players[2].cash, players[3].cash);
-    /*RECV PACKET*/
-    recvPack(playerNum, currPlayer);
     return players[currPlayer].pos;
 }
 
