@@ -49,6 +49,8 @@ int ready[MAX_LOBBY][4] = {NO, };
 //fork
 pid_t game_pids[MAX_LOBBY];  
 
+int main_process = 1;    //True
+
 //Functions
 //Init Blue Marble server
 void init_server();
@@ -100,25 +102,28 @@ int main(int argc, char *argv[]){
     //Debug Message
     printf("Server On!!\n");
 
-    while(1){
-        clnt_adr_sz = sizeof(clnt_adr);
-        clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_adr, (socklen_t*) &clnt_adr_sz);
+    if(main_process == 1){
+        while(1){
+            clnt_adr_sz = sizeof(clnt_adr);
+            clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_adr, (socklen_t*) &clnt_adr_sz);
 
-        pthread_mutex_lock(&mutex);
-        clnt_list[clnt_cnt].pid = -1;
-        clnt_list[clnt_cnt].socket = clnt_sock;
-        //get pid
-        read(clnt_sock, &clnt_list[clnt_cnt].pid, sizeof(int));
-        strcpy(clnt_list[clnt_cnt].username, "");
-        //clnt_socks[clnt_cnt++] = clnt_sock;
-        clnt_cnt += 1;
-        pthread_mutex_unlock(&mutex);
+            pthread_mutex_lock(&mutex);
+            clnt_list[clnt_cnt].pid = -1;
+            clnt_list[clnt_cnt].socket = clnt_sock;
+            //get pid
+            read(clnt_sock, &clnt_list[clnt_cnt].pid, sizeof(int));
+            strcpy(clnt_list[clnt_cnt].username, "");
+            //clnt_socks[clnt_cnt++] = clnt_sock;
+            clnt_cnt += 1;
+            pthread_mutex_unlock(&mutex);
 
-        pthread_create(&t_id, NULL, clnt_main, (void*) &clnt_sock);
-        pthread_detach(t_id);
+            pthread_create(&t_id, NULL, clnt_main, (void*) &clnt_sock);
+            pthread_detach(t_id);
 
-        printf("Log: connected client %s : %d, PID[%d]\n", inet_ntoa(clnt_adr.sin_addr), clnt_sock, clnt_list[clnt_cnt - 1].pid);
+            printf("Log: connected client %s : %d, PID[%d]\n", inet_ntoa(clnt_adr.sin_addr), clnt_sock, clnt_list[clnt_cnt - 1].pid);
+        }
     }
+    
 
     return 0;
 }
@@ -366,6 +371,7 @@ void *game_maker(void* arg){
         game_pids[room_id] = fork();
 
         if(game_pids[room_id] == 0){
+            main_process = 0;  //False
             printf("room_id: %d\n", room_id);   //Debugging
             close(thepipe[0]);  //close read end
             break;
@@ -376,7 +382,7 @@ void *game_maker(void* arg){
         }
     }
 
-    if(game_pids[room_id] == 0){
+    if(game_pids[room_id] == 0){  
         //SIGTERM handling 
         handler.sa_sigaction = sigterm_handler;  
         handler.sa_flags = SA_SIGINFO;
@@ -413,9 +419,10 @@ void *game_maker(void* arg){
             int cnt = 0;
 
             while (1){
-                game_clnt_list[cnt] = accept(new_serv, (struct sockaddr*) &new_clnt_adr, (socklen_t*) &clnt_adr_sz);
+                clnt_adr_sz = sizeof(new_clnt_adr);
+                game_clnt_list[cnt++] = accept(new_serv, (struct sockaddr*) &new_clnt_adr, (socklen_t*) &clnt_adr_sz);
                 printf("Log: Game connected client %s : %d\n", inet_ntoa(new_clnt_adr.sin_addr), game_clnt_list[cnt]);
-                cnt += 1;
+                //cnt += 1;
 
                 if(cnt == 1){
                     read(game_clnt_list[0], &packet, sizeof(PACKET));    //read data from the first client
@@ -424,11 +431,19 @@ void *game_maker(void* arg){
                 }
 
                 printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt]);
-
+                
                 if(cnt == packet.lobby_List[room_id].users){
                     break;
                 }
-                printf("@\n");
+                
+                /*
+                if(cnt == 4){
+                    break;
+                }
+                */
+                
+                //printf("@\n");
+                fflush(stdout);
             }
 
             for(int i = 1; i < cnt; i++){
@@ -438,6 +453,7 @@ void *game_maker(void* arg){
             //Run Game
 
             printf("Game!\n");
+            fflush(stdout);
 
             //game();
             //Debug
@@ -446,7 +462,7 @@ void *game_maker(void* arg){
 
             for(int i = 0; i < cnt; i++){
                 packet.result = QUIT;
-                read(game_clnt_list[i], &packet, sizeof(PACKET));   //garbage
+                write(game_clnt_list[i], &packet, sizeof(PACKET));
             }
 
             clear_lobby(room_id);
@@ -506,10 +522,12 @@ void *clnt_main(void* clnt_socket){
             }         
     }
     
-    
+    /*
     if(packet.result == QUIT){
         client_close(clnt_sock);
     }
+    */
+    
 
     return NULL;
 }
@@ -718,7 +736,6 @@ int room(int clnt_socket, PACKET* packet_ptr){
             packet_ptr->lobby_List[i].accessible = lobby_list[i].accessible;
             packet_ptr->lobby_List[i].users = lobby_list[i].users;
             packet_ptr->lobby_List[i].port = lobby_list[i].port;
-
         }
 
         //printf("Wait for client input\n");
@@ -769,7 +786,7 @@ int room(int clnt_socket, PACKET* packet_ptr){
         */
 
         if(lobby_list[packet_ptr->lobby_idx].accessible == 0){
-            printf("%d %d %s %d %d %d\n", clnt_socket,lobby_list[packet_ptr->lobby_idx].id, lobby_list[packet_ptr->lobby_idx].title, lobby_list[packet_ptr->lobby_idx].accessible, lobby_list[packet_ptr->lobby_idx].users, packet_ptr->lobby_List[packet_ptr->lobby_idx].port);
+            printf("Start game: %d %d %s %d %d %d\n", clnt_socket,lobby_list[packet_ptr->lobby_idx].id, lobby_list[packet_ptr->lobby_idx].title, lobby_list[packet_ptr->lobby_idx].accessible, lobby_list[packet_ptr->lobby_idx].users, packet_ptr->lobby_List[packet_ptr->lobby_idx].port);
             packet_ptr->result = SUCCESS;
 
             for(int i = 0; i < MAX_LOBBY; i++){
@@ -778,10 +795,7 @@ int room(int clnt_socket, PACKET* packet_ptr){
                 packet_ptr->lobby_List[i].accessible = lobby_list[i].accessible;
                 packet_ptr->lobby_List[i].users = lobby_list[i].users;
                 packet_ptr->lobby_List[i].port = lobby_list[i].port;
-
-                
-
-                printf("%d, %d\n", packet_ptr->lobby_List[i].id , packet_ptr->lobby_List[i].users);
+                //printf("%d, %d\n", packet_ptr->lobby_List[i].id , packet_ptr->lobby_List[i].users);
             }
 
             printf("%d game on - idx: %d\n", clnt_socket, packet_ptr->lobby_idx);

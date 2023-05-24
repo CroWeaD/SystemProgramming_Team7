@@ -309,9 +309,10 @@ void* screen_handler(void* arg){
                 stop_wait(1); 
                 char temp_str[MAXLEN];
                 clear();
-                sprintf(temp_str, "%s %d/4\n", packet.lobby_List[packet.lobby_idx].title, packet.lobby_List[packet.lobby_idx].users);
+                //sprintf(temp_str, "%s %d/4\n", packet.lobby_List[packet.lobby_idx].title, packet.lobby_List[packet.lobby_idx].users);
                 move(13, 10);
-                addstr(temp_str);
+                //addstr(temp_str);
+                addstr("GAME!!");
                 stop_wait(4);
                 refresh();
                 break;
@@ -392,11 +393,11 @@ int room(int serv_sock){
         if(packet.result == SUCCESS){
             result = packet.result;
 
-            clear();
-            move(10, 10);
-            addstr("Let's start the game!");
-            stop_wait(0.5);
-            refresh();
+            //clear();
+            //move(10, 10);
+            //addstr("Let's start the game!");
+            //stop_wait(0.5);
+            //refresh();
 
             state = GAME;
 
@@ -418,9 +419,9 @@ void* lobby(void* arg){
 
     signal(SIGALRM, sigalrm_handler);
     
-    new_timeset.it_interval.tv_sec = 5;
+    new_timeset.it_interval.tv_sec = 2;
     new_timeset.it_interval.tv_usec = 0;
-    new_timeset.it_value.tv_sec = 5;
+    new_timeset.it_value.tv_sec = 2;
     new_timeset.it_value.tv_usec = 0;
 
     setitimer(ITIMER_REAL, &new_timeset, NULL);
@@ -492,11 +493,14 @@ void* lobby(void* arg){
                 //addstr(packet.lobby_List[lobby_row].title);
                 //refresh();
 
+                signal(SIGALRM, SIG_IGN);
                 *result = room(serv_sock);
                 
                 //  *result = SUCCESS;
-                if(*result == SUCCESS)
+                if(*result == SUCCESS){
+                    stop_wait(0.05);
                     return (void*) result;
+                }
             }
 
             stop_wait(0.05);
@@ -531,14 +535,13 @@ void* game(void* arg){
     game_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     game_addr.sin_port = htons(packet.lobby_List[packet.lobby_idx].port);
 
-    stop_wait((2 + rand() % 4) / 2);
-    //stop_wait(3);
-
+    //stop_wait(((rand() / 100) % 100));
     if(connect(*game_sock, (struct sockaddr*) &game_addr, sizeof(game_addr)) == -1)
         perror("connect() error!");
 
     while(state != QUIT){
         write(*game_sock, &packet, sizeof(PACKET));
+        stop_wait(5);   //for accesible test
 
         if((readlen = read(*game_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
