@@ -6,36 +6,17 @@
 
 #define SERVER_IP   "127.0.0.1"
 
-static int sock;
 
 static RECV_PACKET packet_recv;
 static SEND_PACKET packet_send;
 static INIT_PACKET init_packet;
 
-
-void setupServer(int serv_port){    
-    struct sockaddr_in serv_addr;
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    serv_addr.sin_port = htons(serv_port);
-
-    if(connect(sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) != 0){
-        perror("connect() error!");
-        exit(1);
-    }
-
-    printf("connected to server.\n");
-    read(sock,(void*)&init_packet,sizeof(INIT_PACKET));
-}
-
-void process_packet(RECV_PACKET* packet){
+void process_packet(RECV_PACKET* packet, int sock){
     gameAction(packet->player, packet->data, packet->type,&packet_send);
     write(sock,(void*)&packet_send,sizeof(SEND_PACKET));
 }
 
-void get_response(RECV_PACKET* packet){
+void get_response(RECV_PACKET* packet,int sock){
     read(sock,(void*)packet,sizeof(RECV_PACKET));
 }
 
@@ -47,13 +28,14 @@ void set_data(){
     }
 }
 
-void mainLoop(){
+void mainLoop(int serv_socket){
+    int sock = serv_socket;
     read(sock,(void*)&init_packet,sizeof(INIT_PACKET));
     set_data();
     startGame(init_packet.player, init_packet.player_num);
     while(true){
-        get_response(&packet_recv);
-        process_packet(&packet_recv);
+        get_response(&packet_recv,sock);
+        process_packet(&packet_recv,sock);
     }
     endGame();
 }
