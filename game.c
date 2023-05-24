@@ -343,8 +343,7 @@ void arrived_city(int type, int curr_pos) {
                             bankruptcy(currPlayer);
 
                         /*SEND PACKET*/
-                        sendSync(playerNum, currPlayer, players[0].pos, players[1].pos, players[3].pos, players[4].pos,
-                                players[0].cash, players[1].cash, players[2].cash, players[3].cash);
+                        sendLandSellResult(playerNum, currPlayer, sell_bitmask, players[currPlayer].cash);
                         /*RECV PACKET*/
                         recvPack(playerNum, currPlayer);
                     }

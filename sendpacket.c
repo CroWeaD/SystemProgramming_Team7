@@ -185,3 +185,10 @@ void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int pric
     for(int i=0; i<playerNum; i++)
         packing2Send(i, 21, currPlayer, data);
 }
+//type 22
+void sendLandSellResult(int playerNum, int currPlayer, int sellLand, int playerCash) {
+    int data[10] = {0,};
+    data[0] = currPlayer; data[1] = sellLand; data[2] = playerCash;
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 22, currPlayer, data);
+}
