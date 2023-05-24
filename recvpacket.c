@@ -22,4 +22,5 @@ int recvPack(int playerNum, int clnt) {
                 close(clnt_sock[i]);
         }
     } 
+    return result;
 }
