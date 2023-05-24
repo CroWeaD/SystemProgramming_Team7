@@ -18,8 +18,8 @@
 #define DONATION_SQR     26         // 기부 칸
 #define TOTAL_SQR        28         // 전체 칸
 
-#define MAN           10000
-#define SALARY       200000
+#define TUSD              10
+#define SALARY       20*TUSD
 
 #define HOTEL             0
 #define BUILDING          1

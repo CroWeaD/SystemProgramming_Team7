@@ -10,6 +10,19 @@ void packing2Send(int clnt, int type, int player, int* data) {
     write(clnt_sock[clnt], (void*)&send_packet, sizeof(send_packet));
 }
 
+// send name
+void sendName(int playerNum, int currPlayer, char* name0, char* name1, char* name2, char* name3) {
+    Name_Send name_send;
+    memset(&name_send, 0, sizeof(name_send));
+    name_send.player = currPlayer;
+    name_send.playernum = playerNum;
+    memcpy(name_send.name0, name0, sizeof(char) * 10);
+    memcpy(name_send.name1, name1, sizeof(char) * 10);
+    memcpy(name_send.name2, name2, sizeof(char) * 10);
+    memcpy(name_send.name3, name3, sizeof(char) * 10);
+    write(clnt_sock[currPlayer], (void*)&name_send, sizeof(name_send));
+}
+
 //type 0
 void sendSync(int playerNum, int currPlayer, int p1Pos, int p2Pos, int p3Pos, int p4Pos, 
             int p1Cash, int p2Cash, int p3Cash, int p4Cash) {
@@ -20,10 +33,11 @@ void sendSync(int playerNum, int currPlayer, int p1Pos, int p2Pos, int p3Pos, in
         packing2Send(i, 0, currPlayer, data);
 }
 //type 1
-void sendDiceWait(int currPlayer) {
+void sendDiceWait(int playerNum, int currPlayer) {
     int data[10] = {0,};
     int clnt = currPlayer;
-    packing2Send(clnt, 1, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 1, currPlayer, data);
 }
 //type 2
 void sendDiceResult(int playerNum, int currPlayer, int die1, int die2, int moveto, int doubleNum, int playerCash) {
@@ -40,18 +54,20 @@ void sendDouble3Time(int playerNum, int currPlayer, int moveto) {
         packing2Send(i, 3, currPlayer, data);
 }
 //type 4
-void sendChooseLand2Buy(int currPlayer, int curr_pos, int buildings) {
+void sendChooseLand2Buy(int playerNum, int currPlayer, int curr_pos, int buildings) {
     int data[10] = {0,};
     int clnt = currPlayer;
     data[0] = curr_pos; data[1] = buildings;
-    packing2Send(clnt, 4, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 4, currPlayer, data);
 }
 //type 5
-void sendTakeOverWait(int currPlayer, int curr_pos, int cost, int host) {
+void sendTakeOverWait(int playerNum, int currPlayer, int curr_pos, int cost, int host) {
     int data[10] = {0,};
     int clnt = currPlayer;
     data[0] = curr_pos; data[1] = cost; data[2] = host;
-    packing2Send(clnt, 5, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 5, currPlayer, data);
 }
 //type 6
 void sendTakeOverResult(int playerNum, int currPlayer, int curr_pos, int host, int cost, int visitantCash, int hostCash) {
@@ -68,11 +84,12 @@ void sendPayResult(int playerNum, int currPlayer, int host, int cost, int visita
         packing2Send(i, 7, currPlayer, data);
 }
 //type 8
-void sendWillLoan(int currPlayer, int curr_pos, int host, int cost) {
+void sendWillLoan(int playerNum, int currPlayer, int curr_pos, int host, int cost) {
     int data[10] = {10,};
     int clnt = currPlayer;
     data[0] = curr_pos; data[1] = host; data[2] = cost;
-    packing2Send(clnt, 8, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 8, currPlayer, data);
 }
 //type 9
 void sendLoanMsg(int playerNum, int currPlayer) {
@@ -82,39 +99,44 @@ void sendLoanMsg(int playerNum, int currPlayer) {
         packing2Send(i, 9, currPlayer, data);
 }
 //type 10
-void sendChooseLand2Sell(int currPlayer, int curr_pos, int cost, int ownLand, 
+void sendChooseLand2Sell(int playerNum, int currPlayer, int curr_pos, int cost, int ownLand, 
                         int building1, int building2, int building3, int building4) {
     int data[10] = {0,};
     int clnt = currPlayer;
     data[0] = curr_pos; data[1] = cost; data[2] = ownLand; data[3] = building1; data[4] = building2; data[5] = building3; data[6] = building4;
-    packing2Send(clnt, 10, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 10, currPlayer, data);
 }
 //type 11
-void sendAskTravel(int currPlayer, int host, int cost) {
+void sendAskTravel(int playerNum, int currPlayer, int host, int cost) {
     int data[10] = {0,};
     int clnt = currPlayer;
     data[0] = host; data[1] = currPlayer; data[2] = cost;
-    packing2Send(clnt, 11, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 11, currPlayer, data);
 }
 //type 12
-void sendWhere2Travel(int currPlayer) {
+void sendWhere2Travel(int playerNum, int currPlayer) {
     int data[10] = {0,};
     int clnt = currPlayer;
-    packing2Send(clnt, 12, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 12, currPlayer, data);
 }
 //type 13
-void sendIslandEscape(int currPlayer, bool escape, int remaining) {
+void sendIslandEscape(int playerNum, int currPlayer, bool escape, int remaining) {
     int data[10] = {0,};
     int has_escape = 0;
     if(escape)  has_escape = 1;
     data[0] = has_escape; data[1] = remaining;
-    sendpacking(13, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 13, currPlayer, data);
 }
 //type 14
-void sendIslandDiceWait(int currPlayer) {
+void sendIslandDiceWait(int playerNum, int currPlayer) {
     int data[10] = {0,};
     int clnt = currPlayer;
-    packing2Send(clnt, 14, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 14, currPlayer, data);
 }
 //type 15
 void sendIslandDiceResult(int playerNum, int currPlayer, int die1, int die2, int moveto) {
@@ -145,10 +167,11 @@ void sendBankruptcy(int playerNum, int currPlayer, int winner) {
         packing2Send(i, 18, currPlayer, data);
 }
 //type 19
-void sendAskVoucher(int currPlayer) {
+void sendAskVoucher(int playerNum, int currPlayer) {
     int data[10] = {0,};
     int clnt = currPlayer;
-    packing2Send(clnt, 19, currPlayer, data);
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 19, currPlayer, data);
 }
 //type 20
 void sendUseVoucher(int playerNum, int currPlayer) {

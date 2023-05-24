@@ -2,34 +2,34 @@
 #include "gamePacket.h"
 
 Square squares[TOTAL_SQR] = {
-    {3, 0, -1, {0,}, {0,}},                                                              // 시작
-    {0, 0, -1, {25*MAN, 15*MAN, 5*MAN, 5*MAN}, {25*MAN, 9*MAN, 1*MAN, 0.2*MAN}},         // 타이페이
-    {2, 0, -1, {0,}, {0,}},                                                              // 황금열쇠
-    {0, 0, -1, {25*MAN, 15*MAN, 5*MAN, 8*MAN}, {45*MAN, 18*MAN, 2*MAN, 0.4*MAN}},        // 베이징
-    {0, 0, -1, {25*MAN, 15*MAN, 5*MAN, 8*MAN}, {45*MAN, 18*MAN, 2*MAN, 0.4*MAN}},        // 마닐라
-    {1, 0, -1, {0,0,0,20*MAN}, {0,0,0,30*MAN}},                                          // 제주도
-    {0, 0, -1, {25*MAN, 15*MAN, 5*MAN, 10*MAN}, {55*MAN, 27*MAN, 3*MAN, 0.6*MAN}},       // 싱가포르
-    {3, 0, -1, {0,}, {0,}},                                                              // 무인도
-    {0, 0, -1, {50*MAN, 30*MAN, 10*MAN, 14*MAN}, {75*MAN, 45*MAN, 5*MAN, 1*MAN}},        // 아테네
-    {2, 0, -1, {0,}, {0,}},                                                              // 황금열쇠
-    {0, 0, -1, {50*MAN, 30*MAN, 10*MAN, 16*MAN}, {75*MAN, 45*MAN, 6*MAN, 1*MAN}},        // 코펜하겐
-    {1, 0, -1, {0,0,0,20*MAN}, {0,0,0,30*MAN}},                                          // 콩코드 여객기
-    {0, 0, -1, {50*MAN, 30*MAN, 10*MAN, 18*MAN}, {95*MAN, 55*MAN, 7*MAN, 1.4*MAN}},      // 베를린
-    {0, 0, -1, {50*MAN, 30*MAN, 10*MAN, 20*MAN}, {100*MAN, 60*MAN, 8*MAN, 1.6*MAN}},     // 몬트리올
-    {3, 0, -1, {0,}, {0,0,0,0}},                                                         // 사회복지기금 
-    {0, 0, -1, {75*MAN, 45*MAN, 15*MAN, 24*MAN}, {110*MAN, 75*MAN, 10*MAN, 2*MAN}},      // 상파울루
-    {2, 0, -1, {0,}, {0,}},                                                              // 황금열쇠
-    {1, 0, -1, {0,0,0,50*MAN}, {0,0,0,60*MAN}},                                          // 부산
-    {0, 0, -1, {75*MAN, 45*MAN, 15*MAN, 26*MAN}, {115*MAN, 80*MAN, 11*MAN, 2.2*MAN}},    // 하와이
-    {1, 0, -1, {0,0,0,30*MAN}, {0,0,0,25*MAN}},                                          // 퀸 엘리자베스호
-    {0, 0, -1, {75*MAN, 45*MAN, 15*MAN, 26*MAN}, {115*MAN, 80*MAN, 11*MAN, 2.2*MAN}},    // 마드리드
-    {3, 0, -1, {0,}, {0,0,0,20*MAN}},                                                    // 우주여행
-    {0, 0, -1, {100*MAN, 60*MAN, 20*MAN, 30*MAN}, {127*MAN, 90*MAN, 13*MAN, 2.6*MAN}},   // 도쿄
-    {1, 0, -1, {0,0,0,45*MAN}, {0,0,0,30*MAN}},                                          // 컬럼비아호
-    {0, 0, -1, {100*MAN, 60*MAN, 20*MAN, 35*MAN}, {150*MAN, 110*MAN, 17*MAN, 3.5*MAN}},  // 런던
-    {2, 0, -1, {0,}, {0,}},                                                              // 황금열쇠
-    {3, 0, -1, {0,}, {0,0,0,15*MAN}},                                                    // 기부
-    {1, 0, -1, {0,0,0,100*MAN}, {0,0,0,200*MAN}}                                         // 서울
+    {3, 0, -1, {0,}, {0,}},                                                                      // 시작
+    {0, 0, -1, {25*TUSD, 15*TUSD, 5*TUSD, 5*TUSD}, {25*TUSD, 9*TUSD, 1*TUSD, 0.2*TUSD}},         // 타이페이
+    {2, 0, -1, {0,}, {0,}},                                                                      // 황금열쇠
+    {0, 0, -1, {25*TUSD, 15*TUSD, 5*TUSD, 8*TUSD}, {45*TUSD, 18*TUSD, 2*TUSD, 0.4*TUSD}},        // 베이징
+    {0, 0, -1, {25*TUSD, 15*TUSD, 5*TUSD, 8*TUSD}, {45*TUSD, 18*TUSD, 2*TUSD, 0.4*TUSD}},        // 마닐라
+    {1, 14, -1, {0,0,0,20*TUSD}, {0,0,0,30*TUSD}},                                               // 제주도
+    {0, 0, -1, {25*TUSD, 15*TUSD, 5*TUSD, 10*TUSD}, {55*TUSD, 27*TUSD, 3*TUSD, 0.6*TUSD}},       // 싱가포르
+    {3, 0, -1, {0,}, {0,}},                                                                      // 무인도
+    {0, 0, -1, {50*TUSD, 30*TUSD, 10*TUSD, 14*TUSD}, {75*TUSD, 45*TUSD, 5*TUSD, 1*TUSD}},        // 아테네
+    {2, 0, -1, {0,}, {0,}},                                                                      // 황금열쇠
+    {0, 0, -1, {50*TUSD, 30*TUSD, 10*TUSD, 16*TUSD}, {75*TUSD, 45*TUSD, 6*TUSD, 1*TUSD}},        // 코펜하겐
+    {1, 14, -1, {0,0,0,20*TUSD}, {0,0,0,30*TUSD}},                                               // 콩코드 여객기
+    {0, 0, -1, {50*TUSD, 30*TUSD, 10*TUSD, 18*TUSD}, {95*TUSD, 55*TUSD, 7*TUSD, 1.4*TUSD}},      // 베를린
+    {0, 0, -1, {50*TUSD, 30*TUSD, 10*TUSD, 20*TUSD}, {100*TUSD, 60*TUSD, 8*TUSD, 1.6*TUSD}},     // 몬트리올
+    {3, 0, -1, {0,}, {0,0,0,0}},                                                                 // 사회복지기금 
+    {0, 0, -1, {75*TUSD, 45*TUSD, 15*TUSD, 24*TUSD}, {110*TUSD, 75*TUSD, 10*TUSD, 2*TUSD}},      // 상파울루
+    {2, 0, -1, {0,}, {0,}},                                                                      // 황금열쇠
+    {1, 14, -1, {0,0,0,50*TUSD}, {0,0,0,60*TUSD}},                                               // 부산
+    {0, 0, -1, {75*TUSD, 45*TUSD, 15*TUSD, 26*TUSD}, {115*TUSD, 80*TUSD, 11*TUSD, 2.2*TUSD}},    // 하와이
+    {1, 0, -1, {0,0,0,30*TUSD}, {0,0,0,25*TUSD}},                                                // 퀸 엘리자베스호
+    {0, 0, -1, {75*TUSD, 45*TUSD, 15*TUSD, 26*TUSD}, {115*TUSD, 80*TUSD, 11*TUSD, 2.2*TUSD}},    // 마드리드
+    {3, 0, -1, {0,}, {0,0,0,20*TUSD}},                                                           // 우주여행
+    {0, 0, -1, {100*TUSD, 60*TUSD, 20*TUSD, 30*TUSD}, {127*TUSD, 90*TUSD, 13*TUSD, 2.6*TUSD}},   // 도쿄
+    {1, 14, -1, {0,0,0,45*TUSD}, {0,0,0,30*TUSD}},                                               // 컬럼비아호
+    {0, 0, -1, {100*TUSD, 60*TUSD, 20*TUSD, 35*TUSD}, {150*TUSD, 110*TUSD, 17*TUSD, 3.5*TUSD}},  // 런던
+    {2, 0, -1, {0,}, {0,}},                                                                      // 황금열쇠
+    {3, 0, -1, {0,}, {0,0,0,15*TUSD}},                                                           // 기부
+    {1, 14, -1, {0,0,0,100*TUSD}, {0,0,0,200*TUSD}}                                              // 서울
 };
 
 Player players[4] = {
@@ -91,6 +91,10 @@ int main(int argc, char* argv[]) {
 	
     set_up(playerNum);
 
+    char name0[10] = "messi", name1[10] = "ronaldo", name2[10] = "", name3[10]="";
+    for(int i=0; i<playerNum; i++)
+        sendName(playerNum, i, name0, name1, name2, name3);
+
     while(1) {
         // 턴 시작
         start_turn();
@@ -109,7 +113,7 @@ void set_up(int num) {
     currPlayer = 0;
     for(int i=0; i<num; i++) {
         players[i].pos = START;
-        players[i].cash = 330*MAN;
+        players[i].cash = 330*TUSD;
         if(num==2)  players[i].cash *= 2;
     }
 }
@@ -134,10 +138,10 @@ void start_turn() {
         }
         else if(players[currPlayer].has_escape) {            // 무인도 탈출권 있으면     
             /*SEND PACKET*/
-            sendIslandEscape(currPlayer, players[currPlayer].has_escape, players[currPlayer].island_remaining);
+            sendIslandEscape(playerNum, currPlayer, players[currPlayer].has_escape, players[currPlayer].island_remaining);
             /*RECV PACKET*/
             //recvTF
-            int use_escape = recvPack(1, currPlayer);
+            int use_escape = recvPack(playerNum, currPlayer);
 
             if(use_escape) {    // 사용
                 printf("사용\n");
@@ -153,7 +157,7 @@ void start_turn() {
         /*SEND PACKET*/
         sendIslandDiceWait(currPlayer);
         /*RECV PACKET*/     
-        recvPack(1, currPlayer);
+        recvPack(playerNum, currPlayer);
 
         int die1 = rand() % 6 + 1;
         int die2 = rand() % 6 + 1;
@@ -182,9 +186,9 @@ void start_turn() {
 
         // 우주여행을 경우
         /*SEND PACKET*/
-        sendWhere2Travel(currPlayer);
+        sendWhere2Travel(playerNum, currPlayer);
         /*RECV PACKET*/
-        int travel = recvPack(1, currPlayer);
+        int travel = recvPack(playerNum, currPlayer);
         
         curr_pos = move_player(travel);
         players[currPlayer].paid_for_sship = false;
@@ -201,9 +205,9 @@ void roll_dice(int doubleNum) {
     int curr_pos;
 
     /*SEND PACKET*/
-    sendDiceWait(currPlayer);
+    sendDiceWait(playerNum, currPlayer);
     /*RECV PACKET*/
-    recvPack(1, currPlayer);
+    recvPack(playerNum, currPlayer);
 
     // 주사위 결과 받음
     die1 = rand() % 6 + 1;
@@ -269,11 +273,11 @@ void arrived_city(int type, int curr_pos) {
         if(players[currPlayer].has_voucher) {               // 우대권이 있다면
 
             /*SEND PACKET*/
-            sendAskVoucher(currPlayer);
+            sendAskVoucher(playerNum, currPlayer);
             printf("우대권이 있습니다. 사용하시겠습니까?: ");
             /*RECV PACKET*/
             // 우대권 사용 여부 받기
-             int use_voucher = recvPack(1, currPlayer);
+             int use_voucher = recvPack(playerNum, currPlayer);
 
             // 우대권 사용할 경우
             if(use_voucher) {
@@ -305,10 +309,10 @@ void arrived_city(int type, int curr_pos) {
             } else if(real(currPlayer)/2 + players[currPlayer].cash >= total_toll) {         // 영끌 가능할 경우
                 if(!players[currPlayer].has_loan) {        // 대출한 적이 없으면
                     /*SEND PACKET*/
-                    sendWillLoan(currPlayer, curr_pos, host, total_toll);
+                    sendWillLoan(playerNum, currPlayer, curr_pos, host, total_toll);
                     /*RECV PACKET*/
                     // 대출 여부 받기
-                    int loan = recvPack(1, currPlayer);
+                    int loan = recvPack(playerNum, currPlayer);
                     if(loan) {
                         players[currPlayer].has_loan = true;
                         players[currPlayer].cash = 0;
@@ -323,10 +327,10 @@ void arrived_city(int type, int curr_pos) {
                             owned_buildings[j] = (owned_buildings[j]<<4) | squares[i].buildings;
                         }
                         /*SEND PACKET*/
-                        sendChooseLand2Sell(currPlayer, curr_pos, total_toll, owner_bitmask, 
+                        sendChooseLand2Sell(playerNum, currPlayer, curr_pos, total_toll, owner_bitmask, 
                                             owned_buildings[3], owned_buildings[2], owned_buildings[1], owned_buildings[0]);
                         /*RECV PACKET*/
-                        int sell_bitmask=recvPack(1, currPlayer);
+                        int sell_bitmask=recvPack(playerNum, currPlayer);
                         checkBitsSet(owner_bitmask, sell_bitmask, currPlayer);
                         players[squares[curr_pos].owner].cash += total_toll;
                         players[currPlayer].cash -= total_toll;
@@ -360,9 +364,9 @@ void arrived_city(int type, int curr_pos) {
         int total_price = cal_price(curr_pos) *2;
         if(total_price <= players[currPlayer].cash) {    // 구매 가능
             /*SEND PACKET*/
-            sendTakeOverWait(currPlayer, curr_pos, total_price, squares[curr_pos].owner);
+            sendTakeOverWait(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].owner);
             /*RECV PACKET*/
-            int take_over = recvPack(1, currPlayer);
+            int take_over = recvPack(playerNum, currPlayer);
             if(take_over) {     // 인수 결정
                 printf("인수\n");
                 trading(curr_pos, total_price, squares[curr_pos].owner, currPlayer);
@@ -380,9 +384,9 @@ void arrived_city(int type, int curr_pos) {
         if(type == CITY) {              // 일반 도시일 경우
             if(squares[curr_pos].buildings != (B_HOTEL + B_BUILDING + B_VILLA + B_LAND)) {
                 /*SEND PACKET*/
-                sendChooseLand2Buy(currPlayer, curr_pos, squares[curr_pos].buildings);
+                sendChooseLand2Buy(playerNum, currPlayer, curr_pos, squares[curr_pos].buildings);
                 /*RECV PACKET*/
-                int receipt = recvPack(1, currPlayer);
+                int receipt = recvPack(playerNum, currPlayer);
                 int total_price = 0;
                 // 건물 구입
                 total_price += construction(receipt, currPlayer, curr_pos, LAND, B_LAND);
@@ -399,10 +403,10 @@ void arrived_city(int type, int curr_pos) {
             if(squares[curr_pos].buildings != (B_LAND)) {
                 int total_price = 0;
                 /*SEND PACKET*/
-                sendChooseLand2Buy(currPlayer, curr_pos, squares[curr_pos].buildings);
+                sendChooseLand2Buy(playerNum, currPlayer, curr_pos, squares[curr_pos].buildings);
                 /*RECV PACKET*/
                 // 건물 구입
-                int receipt = recvPack(1, currPlayer);
+                int receipt = recvPack(playerNum, currPlayer);
                 total_price += construction(receipt, currPlayer, curr_pos, LAND, B_LAND);
                 /*SEND PACKET*/
                 sendLandPuchaseResult(playerNum, currPlayer, curr_pos, total_price, squares[curr_pos].buildings, players[currPlayer].cash);
@@ -442,9 +446,9 @@ void arrived_etc() {
         printf("우주여행 도착\n");
         if(squares[SPACE_TRAVEL_SQR].owner == -1 || (players[currPlayer].cash < squares[SPACE_TRAVEL_SQR].toll[LAND])) {
             /*SEND PACKET*/
-            sendAskTravel(currPlayer, squares[SPACESHIP].owner, squares[SPACESHIP].toll[LAND]);
+            sendAskTravel(playerNum, currPlayer, squares[SPACESHIP].owner, squares[SPACESHIP].toll[LAND]);
             /*RECV PACKET*/
-            int ride = recvPack(1, currPlayer);
+            int ride = recvPack(playerNum, currPlayer);
             if(ride) {
                 printf("우주왕복선 탑승\n");
                 players[currPlayer].cash                   -= squares[SPACE_TRAVEL_SQR].toll[LAND];
