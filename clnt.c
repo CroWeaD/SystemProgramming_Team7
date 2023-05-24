@@ -12,6 +12,7 @@ static RECV_PACKET packet_recv;
 static SEND_PACKET packet_send;
 static INIT_PACKET init_packet;
 
+
 void setupServer(int serv_port){    
     struct sockaddr_in serv_addr;
     sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -38,7 +39,7 @@ void get_response(RECV_PACKET* packet){
     read(sock,(void*)packet,sizeof(RECV_PACKET));
 }
 
-void set_dummydata(){
+void set_data(){
     for(int i = 0;i<4;i++){
         strncpy(players[i].name,init_packet.names[i],10);
         players[i].position = 0;
@@ -46,9 +47,9 @@ void set_dummydata(){
     }
 }
 
-int main(int argc, char* argv[]){
-    setupServer(8080);
-    set_dummydata();
+void mainLoop(){
+    read(sock,(void*)&init_packet,sizeof(INIT_PACKET));
+    set_data();
     startGame(init_packet.player, init_packet.player_num);
     while(true){
         get_response(&packet_recv);
