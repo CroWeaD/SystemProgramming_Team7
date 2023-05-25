@@ -147,8 +147,7 @@ void start_turn() {
         if(players[currPlayer].island_remaining == 0) {          // 무인도 남은턴 수 == 0
             roll_dice(0);
             return;
-        }
-        else if(players[currPlayer].has_escape) {            // 무인도 탈출권 있으면     
+        } else if(players[currPlayer].has_escape) {            // 무인도 탈출권 있으면     
             /*SEND PACKET*/
             sendIslandEscape(playerNum, currPlayer, players[currPlayer].has_escape, players[currPlayer].island_remaining);
             /*RECV PACKET*/
@@ -193,9 +192,7 @@ void start_turn() {
             recvPack(playerNum, currPlayer);
             players[currPlayer].island_remaining -= 1;
         }
-        
-    }
-    else if(players[currPlayer].pos == SPACE_TRAVEL_SQR && players[currPlayer].paid_for_sship) {
+    } else if(players[currPlayer].pos == SPACE_TRAVEL_SQR && players[currPlayer].paid_for_sship) {
 
         // 우주여행을 경우
         /*SEND PACKET*/
@@ -276,6 +273,7 @@ void arrived_square(int curr_pos) {
     else if(squares[curr_pos].type == GOLDED_KEY) {    // 황금열쇠일 경우
         // 황금열쇠를 뽑는 함수
         printf("GOLDEN KEY!!\n");
+        arrived_golden_key(curr_pos);
     } else {
         arrived_etc();
     }
@@ -578,7 +576,7 @@ int construction(int receipt, int currPlayer, int curr_pos, int building_type,  
     return squares[curr_pos].price[building_type];
 }
 
-void draw_golden_key(int curr_pos) {
+void arrived_golden_key(int curr_pos) {
     if(pivot >= 9)
         shuffle();
     int card = golden_keys[pivot++];
@@ -609,18 +607,21 @@ void draw_golden_key(int curr_pos) {
         case 3: // 관광여행(제주)
             int jeju = 5;
             int move = curr_pos > jeju ? TOTAL_SQR - curr_pos + jeju : jeju - curr_pos;
+            curr_pos = jeju;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, jeju, players[currPlayer].cash, 0, 0, 0);
             break;
         case 4: // 관광여행(부산)
             int busan = 17;
             int move = curr_pos > busan ? TOTAL_SQR - curr_pos + busan : busan - curr_pos;
+            curr_pos = busan;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, busan, players[currPlayer].cash, 0, 0, 0);
             break;
         case 5: // 관광여행(서울)
             int seoul = 27;
             int move = curr_pos > seoul ? TOTAL_SQR - curr_pos + seoul : seoul - curr_pos;
+            curr_pos = seoul;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, seoul, players[currPlayer].cash, 0, 0, 0);
             break;
@@ -631,6 +632,7 @@ void draw_golden_key(int curr_pos) {
         case 7: // 우주여행 초대권
             int move = curr_pos > SPACE_TRAVEL_SQR ? TOTAL_SQR - curr_pos + SPACE_TRAVEL_SQR : SPACE_TRAVEL_SQR - curr_pos;    
             move_player(move);
+            players[currPlayer].paid_for_sship = true;
             sendGoldenKey(playerNum, currPlayer, card, SPACE_TRAVEL_SQR, players[currPlayer].cash, 0, 0, 0);        
             break;
         case 8: // 노벨상 500

@@ -50,7 +50,6 @@ typedef struct Player {
     bool has_voucher;           // 우대권 소유 여부
     bool has_escape;            // 무인도 탈출권 소유 여부
     bool paid_for_sship;        // 우주왕복선 비용 지불 여부
-    bool passed_startpoint;     // 시작점 지났는지 여부
 } Player;
 
 void start_game(int pnum, int clnt[4]);
@@ -68,6 +67,6 @@ void bankruptcy();
 void trading(int curr_pos, int total_price, int seller, int buyer);
 void checkBitsSet(int bitmask1, int bitmask2, int currPlayer);
 int construction(int receipt, int currPlayer, int curr_pos, int building_type, int building_bit);
-void draw_golden_key(int curr_pos);
+void arrived_golden_key(int curr_pos);
 int* tax(int curr_pos, int* arr);
 void shuffle();
