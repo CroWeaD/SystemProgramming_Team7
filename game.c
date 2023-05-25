@@ -582,7 +582,8 @@ void draw_golden_key(int curr_pos) {
     if(pivot >= 9)
         shuffle();
     int card = golden_keys[pivot++];
-
+    
+    printf("golden key: %d\n", card);
     /*SEND PACKET*/
     switch(card) {
         case 0: // 우대권
