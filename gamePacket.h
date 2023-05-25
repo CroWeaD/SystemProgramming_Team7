@@ -63,3 +63,4 @@ void sendAskVoucher(int playerNum, int currPlayer);
 void sendUseVoucher(int playerNum, int currPlayer);
 void sendLandPuchaseResult(int playerNum, int currPlayer, int curr_pos, int price, int building_info, int playerCash, int toll);
 void sendLandSellResult(int playerNum, int currPlayer, int sellLand, int playerCash);
+void sendGoldenKey(int playerNum, int currPlayer, int key_num, int data1, int data2, int data3, int data4, int data5);

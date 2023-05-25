@@ -68,3 +68,6 @@ void bankruptcy();
 void trading(int curr_pos, int total_price, int seller, int buyer);
 void checkBitsSet(int bitmask1, int bitmask2, int currPlayer);
 int construction(int receipt, int currPlayer, int curr_pos, int building_type, int building_bit);
+void draw_golden_key(int curr_pos);
+int* tax(int curr_pos, int* arr);
+void shuffle();

@@ -1,6 +1,31 @@
 #include "gamePacket.h"
 
 Game_Send send_packet;
+Game_Recv recv_packet[4];
+
+int recvPack(int playerNum, int clnt) {
+    int result = 0;
+    for(int i=0; i<playerNum; i++) {
+        memset(&recv_packet[i], 0, sizeof(recv_packet[i]));
+        read(clnt_sock[i], (void*)&recv_packet[i], sizeof(recv_packet[i]));
+        if(i != clnt)  continue;
+
+        int type = recv_packet[i].type;
+        int data = recv_packet[i].data[0];
+        printf("[recv] player: %d, type: %d, data: %d\n", i, type, data);
+        switch(type) {
+            case 0: 
+                result = 1; break;
+            case 1: case 2: case 3: case 4:  
+                result = data;  break;
+            default:
+                printf("invalid type");
+                close(clnt_sock[i]);
+        }
+    } 
+    return result;
+}
+
 
 void packing2Send(int clnt, int type, int player, int* data) {
     memset(&send_packet, 0, sizeof(send_packet));
@@ -191,4 +216,11 @@ void sendLandSellResult(int playerNum, int currPlayer, int sellLand, int playerC
     data[0] = currPlayer; data[1] = sellLand; data[2] = playerCash;
     for(int i=0; i<playerNum; i++)
         packing2Send(i, 22, currPlayer, data);
+}
+//type 23
+void sendGoldenKey(int playerNum, int currPlayer, int key_num, int data1, int data2, int data3, int data4, int data5) {
+    int data[10] = {0,};
+    data[0] = key_num; data[1] = data1; data[2] = data2; data[3] = data3; data[4] = data4; data[5] = data5;
+    for(int i=0; i<playerNum; i++)
+        packing2Send(i, 23, currPlayer, data);
 }

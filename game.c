@@ -39,6 +39,9 @@ Player players[4] = {
     {0, -1, -1, 0, false, false, false, false, false}
 };
 
+static int golden_keys[9] = {0, 1, 2, 3, 5, 6, 7, 8};
+static int pivot = 0;
+
 static int state;                  // 0: end, 1: continue
 static int currPlayer;             // 현재 player
 static int playerNum;              // player 수
@@ -46,9 +49,7 @@ static int social_fund;            // 사회복지기금
 
 int clnt_sock[4];
 
-void start_game(int pnum, int clnt[4]) {
-
-    /*
+void tempSocket() {
     int temp_port = 8080;       // 임시 PORT
      playerNum = 2;              // player 수
     int opt = 1;
@@ -88,7 +89,12 @@ void start_game(int pnum, int clnt[4]) {
             perror("accept");
         }
     }
-	*/
+}
+void main() {
+    tempSocket();
+    start_game(2, clnt_sock);
+}
+void start_game(int pnum, int clnt[4]) {
 
     playerNum = pnum;
     for(int i=0; i<playerNum; i++)
@@ -570,4 +576,85 @@ int construction(int receipt, int currPlayer, int curr_pos, int building_type,  
     squares[curr_pos].buildings |= building_bit;
     trading(curr_pos, squares[curr_pos].price[building_type], -1, currPlayer);
     return squares[curr_pos].price[building_type];
+}
+
+void draw_golden_key(int curr_pos) {
+    if(pivot >= 9)
+        shuffle();
+    int card = golden_keys[pivot++];
+
+    /*SEND PACKET*/
+    switch(card) {
+        case 0: // 우대권
+            players[currPlayer].has_voucher = true;
+            sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
+            break;
+        case 1: // 무인도 탈출권  
+            players[currPlayer].has_escape = true;
+            sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
+            break;
+        case 2: // 정기종합소득세
+            int arr[3] = {0,};
+            int t_tax = 0;
+            for(int i=0; i<TOTAL_SQR; i++) 
+                if(currPlayer == squares[i].owner)
+                    memcpy(arr, tax(i, arr), sizeof(int) * 3);
+            t_tax = arr[0] * 150 + arr[1] * 100 + arr[2] * 30;
+            if(players[currPlayer].cash < t_tax)
+                t_tax = players[currPlayer].cash;
+            players[currPlayer].cash -= t_tax;
+            sendGoldenKey(playerNum, currPlayer, card, t_tax, arr[0], arr[1], arr[2], players[currPlayer].cash);
+            break;
+        case 3: // 관광여행(제주)
+            int jeju = 5;
+            int move = curr_pos > jeju ? TOTAL_SQR - curr_pos + jeju : jeju - curr_pos;
+            move_player(move);
+            sendGoldenKey(playerNum, currPlayer, card, jeju, players[currPlayer].cash, 0, 0, 0);
+            break;
+        case 4: // 관광여행(부산)
+            int busan = 17;
+            int move = curr_pos > busan ? TOTAL_SQR - curr_pos + busan : busan - curr_pos;
+            move_player(move);
+            sendGoldenKey(playerNum, currPlayer, card, busan, players[currPlayer].cash, 0, 0, 0);
+            break;
+        case 5: // 관광여행(서울)
+            int seoul = 27;
+            int move = curr_pos > seoul ? TOTAL_SQR - curr_pos + seoul : seoul - curr_pos;
+            move_player(move);
+            sendGoldenKey(playerNum, currPlayer, card, seoul, players[currPlayer].cash, 0, 0, 0);
+            break;
+        case 6: // 무인도 이동
+            players[currPlayer].pos = ISLAND_SQR;
+            sendGoldenKey(playerNum, currPlayer, card, ISLAND_SQR, 0, 0, 0, 0);
+            break;
+        case 7: // 우주여행 초대권
+            int move = curr_pos > SPACE_TRAVEL_SQR ? TOTAL_SQR - curr_pos + SPACE_TRAVEL_SQR : SPACE_TRAVEL_SQR - curr_pos;    
+            move_player(move);
+            sendGoldenKey(playerNum, currPlayer, card, SPACE_TRAVEL_SQR, players[currPlayer].cash, 0, 0, 0);        
+            break;
+        case 8: // 노벨상 500
+            players[currPlayer].cash += 500;
+            sendGoldenKey(playerNum, currPlayer, card, 500, players[currPlayer].cash, 0, 0, 0);
+            break;
+    }
+    /*RECV PACKET*/
+    recvPack(playerNum, currPlayer);
+}
+
+int* tax(int curr_pos, int* arr) {
+    if(squares[curr_pos].buildings & B_HOTEL)     arr[0]++;
+    if(squares[curr_pos].buildings & B_BUILDING)  arr[1]++;
+    if(squares[curr_pos].buildings & B_VILLA)     arr[2]++;  
+    return arr;
+}
+
+void shuffle() {
+    int idx, temp;
+    for(int i=0; i<9; i++) {
+        idx = rand() % 9;
+        temp = golden_keys[idx];
+        golden_keys[idx] = golden_keys[i];
+        golden_keys[i] = temp;
+    }
+    pivot = 0;
 }
