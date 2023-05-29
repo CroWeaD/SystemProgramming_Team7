@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <ncurses.h>    //in ubuntu: curses.h - -lncurses
+#include <ncursesw/curses.h>    //in ubuntu: curses.h - -lncurses
 //#include <ctime> //clock(), clock_t 
 #include <time.h>
 #include "packet.h"
@@ -19,6 +19,7 @@ enum states {LOGIN, LOBBY, ROOM, GAME};
 int state = LOGIN;
 int getlobbydata = NO;  //check client has earned lobby data from the server
 //char input_c = '\0';    //user input at lobby state
+//gcc client.c clnt.c game_clnt.h game_ui.c input.c marble.c -lncursesw -o client
 
 //packet
 PACKET packet;
@@ -45,18 +46,19 @@ void draw();
 int login(int* arg);
 void lobby(int* arg);
 
-void* game(void* arg);
+void game(int* arg);
 
 //Main Function
 int main(int argc, char *argv[]){
 
-    pthread_t screen_thread, login_thread, lobby_thread, game_thread;
+    pthread_t game_thread;
     void* result;
     //Client Socket
     int game_sock;
     init_client(&sock);
     login(&sock);
     printf("login success");
+    setlocale(LC_CTYPE,"");
     initscr();
     clear();
     refresh();
@@ -74,10 +76,7 @@ int main(int argc, char *argv[]){
 
         //(3) game
 
-        if(pthread_create(&game_thread, NULL, game, (void*) &game_sock) != 0)
-            perror("pthread_create() error!");
-        if(pthread_join(lobby_thread, &result) != 0)    //wait for login thread to end
-            perror("pthread_join() error!"); 
+        game(&game_sock);
 
         //state = LOBBY;
         state = QUIT;
@@ -366,6 +365,10 @@ void lobby(int* arg){
             }
             else{
                 signal(SIGALRM, SIG_IGN);
+                clear();
+                move(5, 5);
+                addstr("in room.");
+                refresh();
                 *result = room(serv_sock);
                 
                 //  *result = SUCCESS;
@@ -373,10 +376,6 @@ void lobby(int* arg){
                     stop_wait(0.05);
                     return (void*) result;
                 }
-                clear();
-                move(5, 5);
-                addstr("in room.");
-                refresh();
             }
         }        
     }
@@ -412,9 +411,9 @@ void sigalrm_handler(int s){
 }
 
 
-void* game(void* arg){
+void game(int* arg){
     struct sockaddr_in game_addr;
-    int *game_sock = (int*)arg;
+    int *game_sock = arg;
     int readlen = 0;
 
     //new connection
@@ -431,9 +430,9 @@ void* game(void* arg){
 
     while(state != QUIT){
         write(*game_sock, &packet, sizeof(PACKET));
-        stop_wait(5);   //for accesible test
+        stop_wait(3);   //for accesible test
 
-        mainLoop(&game_sock);
+        mainLoop(*game_sock);
         if((readlen = read(*game_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
 

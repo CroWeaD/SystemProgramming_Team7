@@ -14,6 +14,8 @@
     mysql 8.0.33 version has -lzlib -lzstd linking problem
 */
 
+// gcc server.c game.c gamePacket.c gamePacket.h -o server $(mysql_config --cflags --libs)
+
 #include "packet.h"
 //#include "server_mysql.c"
 //#include "login.c"
@@ -168,6 +170,8 @@ void server_socket_init(){
     serv_adr.sin_family = AF_INET;
     serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_adr.sin_port = htons(SERVER_PORT);
+    int optval = 1;
+    setsockopt(serv_sock,0,SO_REUSEADDR,&optval,sizeof(optval));
 
     if(bind(serv_sock, (struct sockaddr*) &serv_adr, sizeof(serv_adr)) == -1){
         perror("bind() error!");
@@ -201,6 +205,9 @@ void signal_init(){
 }
 
 void mysql_initialization(){
+    printf("enter mysql-server password:");
+    char buf[100];
+    scanf("%s",buf);
     //essencial
     char *server = "localhost";  //server path
     char *user = "root";    //user name
@@ -212,11 +219,11 @@ void mysql_initialization(){
 
     //0. mysql
     if((conn = mysql_init(NULL)) == NULL)
-        perror("mysql_init() error!");
+        printf("%s\n",mysql_error(conn));
     
-    if(mysql_real_connect(conn, server, user, password, database, 0, NULL, 0) == NULL){
+    if(mysql_real_connect(conn, server, user, buf, database, 0, NULL, 0) == NULL){
         mysql_close(conn);
-        perror("mysql_real_connect() error!");
+        printf("%s\n",mysql_error(conn));
     }
 }
 
@@ -225,7 +232,7 @@ MYSQL_RES * mysql_do_query(char *query){
     //printf("%s\n", query);
     if(mysql_query(conn, query)){
         mysql_close(conn);
-        perror("mysql_query() error!");
+        printf("%s\n",mysql_error(conn));
     }
 
     //res = mysql_use_result(conn);   //MYSQL *mysql_use_result(MYSQL *conn);    -> after query, use this fuction to get result
@@ -422,7 +429,7 @@ void *game_maker(void* arg){
             while (1){
                 clnt_adr_sz = sizeof(new_clnt_adr);
                 game_clnt_list[cnt++] = accept(new_serv, (struct sockaddr*) &new_clnt_adr, (socklen_t*) &clnt_adr_sz);
-                printf("Log: Game connected client %s : %d\n", inet_ntoa(new_clnt_adr.sin_addr), game_clnt_list[cnt]);
+                printf("Log: Game connected client %s : %d\n", inet_ntoa(new_clnt_adr.sin_addr), game_clnt_list[cnt-1]);
                 //cnt += 1;
 
                 if(cnt == 1){
@@ -431,7 +438,7 @@ void *game_maker(void* arg){
                     printf("Lobby[%d] user: %d\n", packet.lobby_idx + 1, packet.lobby_List[room_id].users);
                 }
 
-                printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt]);
+                printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt-1]);
                 
                 if(cnt == packet.lobby_List[room_id].users){
                     break;

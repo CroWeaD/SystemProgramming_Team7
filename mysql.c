@@ -5,7 +5,7 @@
 //essential
 char *server = "localhost";  //server path
 char *user = "root";    //user name
-char *password = "1q2w3e4r@@"; //password of the user
+char *password = "ahfmsek33@@"; //password of the user
 
 //optional
 char *database = "BlueMarble";  //DataBase name
@@ -100,25 +100,25 @@ void connect0(){
     //init lobby - only use once!!
     //char temp[300];
     char room_title[100];
-    for(int i = 1; i <= 20; i++){
-
-        sprintf(room_title, "Room %d", i);
-        sprintf(temp, "INSERT INTO lobby (title, access, users) VALUES('%s', %d, %d)", room_title, 1, 0);
-        printf("%s\n", temp);
-        query = temp;
-
-        if(mysql_query(conn, query)){
-            printf("%s\n",mysql_error(conn));
-            mysql_free_result(res);     //free result
-            mysql_close(conn);
-            perror("mysql_query() error!");
-            exit(1);
-        }
-        else{
-            res = mysql_use_result(conn);   //MYSQL *mysql_use_result(MYSQL *conn);    -> after query, use this fuction to get result
-            printf("%s\n", query);
-        }  
-    }
+    //for(int i = 1; i <= 20; i++){
+//
+    //    sprintf(room_title, "Room %d", i);
+    //    sprintf(temp, "INSERT INTO lobby (title, access, users) VALUES('%s', %d, %d)", room_title, 1, 0);
+    //    printf("%s\n", temp);
+    //    query = temp;
+//
+    //    if(mysql_query(conn, query)){
+    //        printf("%s\n",mysql_error(conn));
+    //        mysql_free_result(res);     //free result
+    //        mysql_close(conn);
+    //        perror("mysql_query() error!");
+    //        exit(1);
+    //    }
+    //    else{
+    //        res = mysql_use_result(conn);   //MYSQL *mysql_use_result(MYSQL *conn);    -> after query, use this fuction to get result
+    //        printf("%s\n", query);
+    //    }  
+    //}
 
     mysql_free_result(res);     //free result
     mysql_close(conn);    //close connection

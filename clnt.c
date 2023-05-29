@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include "game_clnt.h"
+#include <ncursesw/curses.h>
 
 #define SERVER_IP   "127.0.0.1"
 
@@ -30,7 +31,11 @@ void set_data(){
 
 void mainLoop(int serv_socket){
     int sock = serv_socket;
-    read(sock,(void*)&init_packet,sizeof(INIT_PACKET));
+    int readlen;
+    int t = 0;
+    int t2 = 0;
+    char log[256];
+    readlen = read(sock,(void*)&init_packet,sizeof(INIT_PACKET));
     set_data();
     startGame(init_packet.player, init_packet.player_num);
     while(true){

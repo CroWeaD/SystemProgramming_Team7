@@ -268,6 +268,22 @@ void reception(int money){                                  // 접수처
     getOneButton(L"수령");
 }
 
+
+int escape(int remaining){
+    setHeader(L"무인도",true, COLOR_PAIR_DEAFULT);
+    wchar_t header[30];
+    swprintf(header,30,L"무인도 탈줄권을 사용하시겠습니까? (남은 턴 수 : %d)\0",remaining);
+    showText(header);
+    return getYesNo(L"예",L"아니오");    
+}
+
+int blackcard(){
+    clearContext();
+    showText(L"우대권을 사용하시겠습니까?");
+    return getYesNo(L"예",L"아니오");
+
+}
+
 void InitLandSaleMenu(int index, int buildinglist){
     enabled[4] = true;
     for(int i = 1;i<4;i++)

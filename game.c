@@ -90,10 +90,10 @@ void tempSocket() {
         }
     }
 }
-void main() {
-    tempSocket();
-    start_game(2, clnt_sock);
-}
+//void main() {
+//    tempSocket();
+//    start_game(2, clnt_sock);
+//}
 void start_game(int pnum, int clnt[4]) {
 
     playerNum = pnum;
@@ -580,6 +580,7 @@ void arrived_golden_key(int curr_pos) {
     if(pivot >= 9)
         shuffle();
     int card = golden_keys[pivot++];
+    int move;
     
     printf("golden key: %d\n", card);
     /*SEND PACKET*/
@@ -606,21 +607,21 @@ void arrived_golden_key(int curr_pos) {
             break;
         case 3: // 관광여행(제주)
             int jeju = 5;
-            int move = curr_pos > jeju ? TOTAL_SQR - curr_pos + jeju : jeju - curr_pos;
+            move = curr_pos > jeju ? TOTAL_SQR - curr_pos + jeju : jeju - curr_pos;
             curr_pos = jeju;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, jeju, players[currPlayer].cash, 0, 0, 0);
             break;
         case 4: // 관광여행(부산)
             int busan = 17;
-            int move = curr_pos > busan ? TOTAL_SQR - curr_pos + busan : busan - curr_pos;
+            move = curr_pos > busan ? TOTAL_SQR - curr_pos + busan : busan - curr_pos;
             curr_pos = busan;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, busan, players[currPlayer].cash, 0, 0, 0);
             break;
         case 5: // 관광여행(서울)
             int seoul = 27;
-            int move = curr_pos > seoul ? TOTAL_SQR - curr_pos + seoul : seoul - curr_pos;
+            move = curr_pos > seoul ? TOTAL_SQR - curr_pos + seoul : seoul - curr_pos;
             curr_pos = seoul;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, seoul, players[currPlayer].cash, 0, 0, 0);
@@ -630,7 +631,7 @@ void arrived_golden_key(int curr_pos) {
             sendGoldenKey(playerNum, currPlayer, card, ISLAND_SQR, 0, 0, 0, 0);
             break;
         case 7: // 우주여행 초대권
-            int move = curr_pos > SPACE_TRAVEL_SQR ? TOTAL_SQR - curr_pos + SPACE_TRAVEL_SQR : SPACE_TRAVEL_SQR - curr_pos;    
+            move = curr_pos > SPACE_TRAVEL_SQR ? TOTAL_SQR - curr_pos + SPACE_TRAVEL_SQR : SPACE_TRAVEL_SQR - curr_pos;    
             move_player(move);
             players[currPlayer].paid_for_sship = true;
             sendGoldenKey(playerNum, currPlayer, card, SPACE_TRAVEL_SQR, players[currPlayer].cash, 0, 0, 0);        

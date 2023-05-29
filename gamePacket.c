@@ -46,6 +46,8 @@ void sendName(int playerNum, int currPlayer, char* name0, char* name1, char* nam
     memcpy(name_send.name2, name2, sizeof(char) * 10);
     memcpy(name_send.name3, name3, sizeof(char) * 10);
     write(clnt_sock[currPlayer], (void*)&name_send, sizeof(name_send));
+
+    printf("sent name to %d player.\n",currPlayer);    
 }
 
 //type 0
