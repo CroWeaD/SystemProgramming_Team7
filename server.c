@@ -441,8 +441,6 @@ void *game_maker(void* arg){
                 }
 
                 printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt-1]);
-                read(game_clnt_list[cnt - 1], &packet, sizeof(PACKET));   //garbage
-                strcpy(clnt_names[cnt - 1], packet.info.username);
                 
                 if(cnt == packet.lobby_List[room_id].users){
                     break;
@@ -457,11 +455,12 @@ void *game_maker(void* arg){
                 //printf("@\n");
                 fflush(stdout);
             }
-            /*
+            
             for(int i = 1; i < cnt; i++){
                 read(game_clnt_list[i], &packet, sizeof(PACKET));   //garbage
+                strcpy(clnt_names[i], packet.info.username);
             }
-            */
+            
             
   
             //Run Game
@@ -620,7 +619,7 @@ int login(int clnt_socket, PACKET* packet_ptr){
             
             while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
                 //printf("%s %s %s\n", row[1], row[2], row[3]);
-                if(strcmp(row[3], packet_ptr->info.username) == 0){
+                if(strcmp(row[3], packet_ptr->info.username) != 0){
                     if(strcmp(row[2], packet_ptr->info.password) == 0 && strcmp(row[1], packet_ptr->info.id) == 0){
                         packet_ptr->result = FAIL;
                         break;
@@ -641,12 +640,12 @@ int login(int clnt_socket, PACKET* packet_ptr){
 
             mysql_free_result(res);
             res = NULL;
-            printf("Login Failed!\n");
+     
             printf("%s %s %d\n", packet_ptr->message, packet_ptr->info.username, packet_ptr->result);
 
             if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
                 perror("write() error!");
-            }
+         }
     }
 }
 
