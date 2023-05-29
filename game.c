@@ -643,6 +643,8 @@ void arrived_golden_key(int curr_pos) {
     }
     /*RECV PACKET*/
     recvPack(playerNum, currPlayer);
+    if(card==3 || card==4 || card==5) 
+        arrived_square(players[currPlayer].pos);
 }
 
 int* tax(int curr_pos, int* arr) {
