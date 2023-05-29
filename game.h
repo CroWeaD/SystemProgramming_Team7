@@ -51,7 +51,7 @@ typedef struct Player {
     bool has_escape;            // 무인도 탈출권 소유 여부
     bool paid_for_sship;        // 우주왕복선 비용 지불 여부
 } Player;
-
+// game
 void start_game(int pnum, int clnt[4]);
 void set_up();
 void start_turn();
