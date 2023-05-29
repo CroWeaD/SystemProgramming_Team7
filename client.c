@@ -48,6 +48,8 @@ void lobby(int* arg);
 
 void game(int* arg);
 
+char* login2(int* arg);
+
 //Main Function
 int main(int argc, char *argv[]){
 
@@ -435,6 +437,8 @@ void game(int* arg){
         mainLoop(*game_sock);
         if((readlen = read(*game_sock, &packet, sizeof(PACKET))) == -1)
             perror("read() error!");
+
+	printf("%d\n", packet.result);
 
         if(packet.result == QUIT){
             state = QUIT;
