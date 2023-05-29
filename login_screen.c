@@ -28,7 +28,7 @@ static char username[20] = "";
 void startHighlight(WINDOW* win, int choice, char* str1, int x1, int y1, char* str2, int x2, int y2, int c1, int c2);
 int start_screen(WINDOW* win);
 int signIn(WINDOW* win, int serv_sock);
-int signUp(WINDOW* win);
+int signUp(WINDOW* win, int serv_sock);
 
 char* login2(int* arg) {
     //int *arg;
@@ -61,7 +61,7 @@ char* login2(int* arg) {
                 state = signIn(win, serv_sock);
                 break;
             case SIGNUP:
-                state = signUp(win);
+                state = signUp(win, serv_sock);
                 break;
             case CONTINUE:
                 flag = 0;
@@ -143,6 +143,7 @@ int signIn(WINDOW* win, int serv_sock) {
     
     strcpy(packet.info.id, id);
     strcpy(packet.info.password, pw);
+    strcpy(packet.info.username, "LOGIN");
     packet.result = 0;
 
     while(1) {    
@@ -180,8 +181,9 @@ int signIn(WINDOW* win, int serv_sock) {
     return choice;
 }
 
-int signUp(WINDOW* win) {
+int signUp(WINDOW* win, int serv_sock) {
     int choice = SIGNIN;
+    int readlen = 0;
 
     mvwprintw(win, 2, 13, "Welcome to Blue Marble!");
     mvwprintw(win, 3, 12, "Let's begin the adventure");
@@ -196,19 +198,24 @@ int signUp(WINDOW* win) {
     wmove(win, 6, 8);
 
     // 입력 받기
-    wchar_t name[20];
-    wchar_t id[20];
-    wchar_t pw[20];
+    char name[20];
+    char id[20];
+    char pw[20];
     echo();
     curs_set(1);
-    wgetn_wstr(win, name, 20);
+    wgetstr(win, name);
     wmove(win, 7, 6);
-    wgetn_wstr(win, id, 20);
+    wgetstr(win, id);
     wmove(win, 8, 6);
     wrefresh(win);
-    wgetn_wstr(win, pw, 20);
+    wgetstr(win, pw);
     curs_set(0);
     noecho();
+
+    strcpy(packet.info.id, id);
+    strcpy(packet.info.password, pw);
+    strcpy(packet.info.username, name);
+    packet.result = 0;
 
     while(1) {       
         fflush(stdin);
@@ -220,7 +227,22 @@ int signUp(WINDOW* win) {
         } else if(ch==RIGHT) {
             choice = BACK;
         } else if(ch==SPACEBAR) {
-            
+            if(choice==SIGNIN) {
+                write(serv_sock, &packet, sizeof(PACKET));
+
+                if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
+                    perror("read() error!");  
+
+                if(packet.result == SUCCESS){
+                    
+                } else {
+                    mvwprintw(win, 2, 11, BLANK);
+                    mvwprintw(win, 2, 11, packet.message);
+                    wrefresh(win);
+                    sleep(1);
+                    choice = SIGNUP;
+                }
+            }
             // 아이디 중복 확인?
             wclear(win);
             break;
