@@ -22,7 +22,7 @@
 
 static enum State_login{BACK=0, INIT=0, SIGNIN, SIGNUP, CONTINUE};
 
-PACKET packet;
+static PACKET packet;
 static char username[20] = "";
 
 void startHighlight(WINDOW* win, int choice, char* str1, int x1, int y1, char* str2, int x2, int y2, int c1, int c2);
