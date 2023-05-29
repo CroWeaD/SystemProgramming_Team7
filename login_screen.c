@@ -1,6 +1,7 @@
 #include <ncursesw/curses.h>
 #include <wchar.h>
-#include "client.c"
+#include <string.h>
+#include "packet.h"
 
 #define LEFT 'a'
 #define RIGHT 'd'
@@ -19,15 +20,18 @@
 #define COLOR_PAIR_DEAFULT 1
 #define COLOR_PAIR_DEFAULT_REVERSE 2
 
-static enum State_longin{BACK=0, INIT=0, SIGNIN, SIGNUP, CONTINUE};
+static enum State_login{BACK=0, INIT=0, SIGNIN, SIGNUP, CONTINUE};
+
+PACKET packet;
+static char username[20] = "";
 
 void startHighlight(WINDOW* win, int choice, char* str1, int x1, int y1, char* str2, int x2, int y2, int c1, int c2);
 int start_screen(WINDOW* win);
 int signIn(WINDOW* win, int serv_sock);
 int signUp(WINDOW* win);
 
-int login2(int *arg) {
-
+char* login2(int* arg) {
+    //int *arg;
     int serv_sock = *arg;
     // ncurses 초기화
     initscr();
@@ -35,7 +39,7 @@ int login2(int *arg) {
     noecho();
     curs_set(0);
 
-    enum State_longin state = INIT;
+    enum State_login state = INIT;
     int flag = 1;
 
     // 색상 설정
@@ -67,7 +71,7 @@ int login2(int *arg) {
     // 종료
     delwin(win);
     endwin();
-    return 0;
+    return username;
 }
 
 void startHighlight(WINDOW* win, int choice, char* str1, int x1, int y1, char* str2, int x2, int y2, int c1, int c2) {
@@ -115,33 +119,33 @@ int signIn(WINDOW* win, int serv_sock) {
     int choice = CONTINUE;
     int readlen = 0;
 
-    while(1) {
-        mvwprintw(win, 2, 11, "Enter your ID and password!");
-        mvwprintw(win, 6, 2, "ID: ");
-        mvwprintw(win, 8, 2, "PW: ");
-        mvwprintw(win, RIGHT_LEFT_BUTTON_Y, LEFT_BUTTON_X, "[Sign in]");
-        mvwprintw(win, RIGHT_LEFT_BUTTON_Y, RIGHT_BUTTON_X, "[Back]");
-        wrefresh(win);
+    mvwprintw(win, 2, 11, "Enter your ID and password!");
+    mvwprintw(win, 6, 2, "ID: ");
+    mvwprintw(win, 8, 2, "PW: ");
+    mvwprintw(win, RIGHT_LEFT_BUTTON_Y, LEFT_BUTTON_X, "[Sign in]");
+    mvwprintw(win, RIGHT_LEFT_BUTTON_Y, RIGHT_BUTTON_X, "[Back]");
+    wrefresh(win);
 
-        // 커서 이동
-        wmove(win, 6, 6);
+    // 커서 이동
+    wmove(win, 6, 6);
 
-        // 입력 받기
-        wint_t id[20];
-        wint_t pw[20];
-        echo();
-        curs_set(1);
-        wgetn_wstr(win, id, 20);
-        wmove(win, 8, 6);
-        wrefresh(win);
-        wgetn_wstr(win, pw, 20);
-        curs_set(0);
-        noecho();
-        
-        strcpy(packet.info.id, id);
-        strcpy(packet.info.password, pw);
-        packet.result = 0;
+    // 입력 받기
+    wint_t id[20];
+    wint_t pw[20];
+    echo();
+    curs_set(1);
+    wgetn_wstr(win, id, 20);
+    wmove(win, 8, 6);
+    wrefresh(win);
+    wgetn_wstr(win, pw, 20);
+    curs_set(0);
+    noecho();
     
+    strcpy(packet.info.id, id);
+    strcpy(packet.info.password, pw);
+    packet.result = 0;
+
+    while(1) {    
         fflush(stdin);
         startHighlight(win, choice, "[Sign in]", RIGHT_LEFT_BUTTON_Y, LEFT_BUTTON_X, 
                                     "[Back]", RIGHT_LEFT_BUTTON_Y, RIGHT_BUTTON_X, CONTINUE, BACK);
@@ -152,13 +156,15 @@ int signIn(WINDOW* win, int serv_sock) {
             choice = BACK;
         } else if(ch==SPACEBAR) {
             if(choice == CONTINUE) {
+                /*
                 write(serv_sock, &packet, sizeof(PACKET));
 
                 if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
                     perror("read() error!");  
-
+                */
+                packet.result = 1;
                 if(packet.result == SUCCESS){
-                    strcpy(cur_user.username, packet.info.username);
+                    strcpy(username, packet.info.username);
                 } else {
                     choice = SIGNIN;
                 }

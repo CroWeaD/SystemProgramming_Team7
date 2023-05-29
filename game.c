@@ -368,6 +368,7 @@ void arrived_city(int type, int curr_pos) {
                     players[squares[curr_pos].owner].cash += total_toll;
                     printf("대출\n");
                     sendLoanMsg(playerNum, currPlayer);
+                    recvPack(playerNum, currPlayer);
                 } else {
 
                     players[currPlayer].cash -= total_toll;
