@@ -594,17 +594,9 @@ void arrived_golden_key(int curr_pos) {
             players[currPlayer].has_escape = true;
             sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
             break;
-        case 2: // 정기종합소득세
-            int arr[3] = {0,};
-            int t_tax = 0;
-            for(int i=0; i<TOTAL_SQR; i++) 
-                if(currPlayer == squares[i].owner)
-                    memcpy(arr, tax(i, arr), sizeof(int) * 3);
-            t_tax = arr[0] * 150 + arr[1] * 100 + arr[2] * 30;
-            if(players[currPlayer].cash < t_tax)
-                t_tax = players[currPlayer].cash;
-            players[currPlayer].cash -= t_tax;
-            sendGoldenKey(playerNum, currPlayer, card, t_tax, arr[0], arr[1], arr[2], players[currPlayer].cash);
+        case 2: // 무인도 탈출권
+            players[currPlayer].has_escape = true;
+            sendGoldenKey(playerNum, currPlayer, 1, 0, 0, 0, 0, 0);
             break;
         case 3: // 관광여행(제주)
             int jeju = 5;
