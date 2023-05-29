@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
     //Client Socket
     int game_sock;
     init_client(&sock);
-    login(&sock);
+    strcpy(cur_user.username, login2(&sock));
     printf("login success");
     setlocale(LC_CTYPE,"");
     initscr();
