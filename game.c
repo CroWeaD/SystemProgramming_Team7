@@ -166,7 +166,7 @@ void start_turn() {
         
         // 주사위 입력받음
         /*SEND PACKET*/
-        sendIslandDiceWait(currPlayer);
+        sendIslandDiceWait(playerNum, currPlayer, players[currPlayer].island_remaining);
         /*RECV PACKET*/     
         recvPack(playerNum, currPlayer);
 
@@ -452,7 +452,7 @@ void arrived_etc() {
     }else if(players[currPlayer].pos == DONATION_SQR) {       // 기부
         printf("사회복지기금 기부\n");
         int donation = 0;
-        if(players[currPlayer].cash < squares[DONATION_SQR].toll[LAND]) 
+        if(players[currPlayer].cash >= squares[DONATION_SQR].toll[LAND]) 
             donation = squares[DONATION_SQR].toll[LAND];
         else 
             donation = players[currPlayer].cash;

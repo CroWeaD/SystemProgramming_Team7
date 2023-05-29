@@ -157,9 +157,9 @@ void sendIslandEscape(int playerNum, int currPlayer, bool escape, int remaining)
         packing2Send(i, 13, currPlayer, data);
 }
 //type 14
-void sendIslandDiceWait(int playerNum, int currPlayer) {
+void sendIslandDiceWait(int playerNum, int currPlayer, int islandRemain) {
     int data[10] = {0,};
-    int clnt = currPlayer;
+    data[0] = islandRemain;
     for(int i=0; i<playerNum; i++)
         packing2Send(i, 14, currPlayer, data);
 }
