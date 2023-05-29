@@ -54,7 +54,9 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
                 loan_result();
                 break;
             case 10:
-                landsale(0,0,&data[2]);
+                packet->type = 3;
+                result1= landsale(data[0],data[1],data[2],data[3],data[4],data[5],data[6]);
+                packet->data[0] = result1;
                 break;
             case 11:
                 packet->type = 1;
@@ -72,7 +74,7 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
                 packet->data[0] = result1;
                 break;
             case 14:
-                roll_island();
+                roll_island(data[0]);
                 break;
             case 15:
                 roll_island_result(player,data[0],data[1],data[2]);
@@ -83,6 +85,9 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
             case 17:
                 pay_welfare(data[1],data[0],data[3]);
                 break;
+            case 18:
+            bankrupt(player);
+            break;
             case 19:
                 packet->type = 1;
                 result1 =  ask_blackcard(player);
@@ -94,6 +99,13 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
             case 21:
                 buliding_buy_result(data[0],data[1],data[3],data[4],data[5]);
                 break;
+            case 22:
+                sell_lands(data[1],data[0],data[2]);
+                break;
+            case 23:
+                goldenKey(player,data[0],data[1],data[2],data[3],data[4],data[5]);
+                break;
+
 
         }
         return true;
@@ -128,7 +140,7 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
                 loan_result_2(player);
                 break;
             case 10:
-                landsale(0,0,&data[2]);
+                landsale_2(player);
                 break;
             case 11:
                 ask_travel_2(player);
@@ -151,6 +163,9 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
             case 17:
                 pay_welfare_2(player,data[1],data[0],data[3]);
                 break;
+            case 18:
+            bankrupt(player);
+            break;
             case 19:
                 ask_blackcard_1(player);
                 break;
@@ -159,6 +174,12 @@ bool gameAction(int player, int* data, int type, SEND_PACKET* packet){
                 break;
             case 21:
                 buliding_buy_result(data[0],data[1],data[3],data[4],data[5]);
+                break;
+            case 22:
+                sell_lands(data[1],data[0],data[2]);
+                break;
+            case 23:
+                goldenKey_2(player,data[0],data[1],data[2],data[3],data[4],data[5]);
                 break;
         }
         refresh();
@@ -272,14 +293,10 @@ void undertake_result_2(int index, int buyer, int seller, int price, int buyer_b
 
 // 7. 요금 지불 결과
 void payToll(int visitor, int owner, int price, int visitor_bud, int owner_bud){
-    if(owner == -1){
-        setTollContext(L"은행원",names[players[visitor].position],price);
-    }
-    else
-        setTollContext(players[owner].name,names[players[visitor].position],price);
-    setOkayButton(L"확인",COLOR_PAIR_HIGHLIGHT);
+    toll(visitor,owner,price);
     players[visitor].budget = visitor_bud;
-    players[owner].budget = owner_bud;
+    if(owner != -1)
+        players[owner].budget = owner_bud;
     drawPlayerInfo(visitor);
     drawPlayerInfo(owner);
 }
@@ -287,7 +304,8 @@ void payToll(int visitor, int owner, int price, int visitor_bud, int owner_bud){
 void payToll_2(int visitor, int owner, int price, int visitor_bud, int owner_bud){
     otherPlayerMessage(visitor, L"다른 플레이어가 통행료를 지불합니다.",L"통행료 지불");
     players[visitor].budget = visitor_bud;
-    players[owner].budget = owner_bud;
+    if(owner != -1)
+        players[owner].budget = owner_bud;
     drawPlayerInfo(visitor);
     drawPlayerInfo(owner);
 }
@@ -313,8 +331,12 @@ void loan_result_2(int player){
 }
 
 // 10. 판매 토지 선택
-void landsale(int index, int price, int* landList){
+int landsale(int index, int price, int landOwn, int land1, int land2, int land3, int land4){
+    return loolLandsaleMenu(index,price,landOwn,land1,land2,land3,land4);
+}
 
+void landsale_2(int playerID){
+    otherPlayerMessage(playerID, L"다른 플레이어가 매각할 땅을 결정중입니다.",L"토지매각");
 }
 
 // 11. 세계여행 여부 선택
@@ -349,9 +371,10 @@ void ask_escape_2(int playerID){
 }
 
 // 14. 무인도 주사위 대기
-void roll_island(){
-    island(0);
+void roll_island(int remaining){
+    island(remaining);
 }
+
 
 // 15. 무인도 주사위 결과
 void roll_island_result(int player, int die1, int die2, int moving){
@@ -403,6 +426,12 @@ void pay_welfare_2(int player, int money, int payer, int payer_bud){
 
 }
 
+// 18. 파산
+void bankrupt(int player){
+    clearContext();
+    simpleMessage(L"다른 플레이어가 파산하였습니다!",L"종료");
+}
+
 // 19. 우대권 여부
 int ask_blackcard(int player){
     return blackcard();
@@ -432,6 +461,136 @@ void buliding_buy_result(int index, int playerID, int building, int playerBud, i
     players[playerID].budget = playerBud;
     drawPlayerInfo(playerID);
     drawTile(index);
+}
+
+
+// 22. 토지 매각 결과
+void sell_lands(int lands, int player, int player_bud){
+    for(int i = 0;i<28;i++){
+        if(lands&1){
+            owner[i] = -1;
+            buildings[i] = 0;
+            cost[i] = 0;
+            drawTile(i);
+        }
+        lands>>=1;
+    }
+    players[player].budget = player_bud;
+    drawPlayerInfo(player);
+}
+
+void tax(int player, int player_bud, int fee){
+    payTax(fee);
+    players[player].budget = player_bud;
+    drawPlayerInfo(player);
+}
+
+void travel_package(wchar_t* message, int player, int index){
+    simpleMessage(message,L"확인");
+
+
+    usleep(1000000);
+    movePlayer(player, index);
+    highlightPlayer(player);
+    drawPlayerInfo(player);
+    refresh();
+    move(20,20);
+    printw("index: %d",index);
+    usleep(300000);
+}
+
+
+void travel_package_2(wchar_t* message, int player, int index){
+    otherPlayerMessage(player,message,L"황금카드");
+    setHeader(L"황금카드",true, COLOR_PAIR_HIGHLIGHT);
+
+    usleep(1000000);
+    movePlayer(player, index);
+    highlightPlayer(player);
+    drawPlayerInfo(player);
+    refresh();
+    usleep(300000);
+}
+
+void goldenKey(int player, int type, int data1,int data2,int data3,int data4,int data5){
+    setHeader(L"황금카드",true, COLOR_PAIR_HIGHLIGHT);
+    switch(type){
+        case 0:
+            simpleMessage(L"우대권을 획득하였습니다!",L"확인");
+            break;
+        case 1:
+            simpleMessage(L"무인도 탈출권을 획득하였습니다!",L"확인");
+            break;
+        case 2:
+            tax(player,data5,data1);
+            break;
+        case 3:
+            travel_package(L"관광여행! 제주도로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 4:
+            travel_package(L"관광여행! 부산으로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 5:
+            travel_package(L"관광여행! 서울로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 6:
+            travel_package(L"무인도로 이동합니다.",player,data1);
+            break;
+        case 7:
+            travel_package(L"우주여행 초대권! 우주여행 타일로 이동합니다.",player,data1);
+            break;
+        case 8:
+            getPrize(data1);
+            players[player].budget = data2;
+            break;
+
+        drawPlayerInfo(player);
+    }
+}
+
+void goldenKey_2(int player, int type, int data1,int data2,int data3,int data4,int data5){
+    setHeader(L"황금카드",true, COLOR_PAIR_HIGHLIGHT);
+    switch(type){
+        case 0:
+            otherPlayerMessage(player,L"우대권을 획득하였습니다!",L"황금카드");
+            break;
+        case 1:
+            otherPlayerMessage(player,L"무인도 탈출권을 획득하였습니다!",L"황금카드");
+            break;
+        case 2:
+            otherPlayerMessage(player,L"정기종합소득세를 지불합니다.",L"황금카드");
+            players[player].budget = data5;
+            drawPlayerInfo(player);
+        case 3:
+            travel_package_2(L"관광여행! 제주도로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 4:
+            travel_package_2(L"관광여행! 부산으로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 5:
+            travel_package_2(L"관광여행! 서울로 이동합니다.",player,data1);
+            players[player].budget = data2;
+            break;
+        case 6:
+            travel_package_2(L"무인도로 이동합니다.",player,data1);
+            break;
+        case 7:
+            travel_package_2(L"우주여행 초대권! 우주여행 타일로 이동합니다.",player,data1);
+            break;
+        case 8:
+            otherPlayerMessage(player,L"노벨상을 수상했습니다!",L"황금카드");
+            players[player].budget = data2;
+            break;
+
+        setHeader(L"황금카드",true, COLOR_PAIR_HIGHLIGHT);
+        drawPlayerInfo(player);
+    }
+
 }
 
 void otherPlayerMessage(int player, wchar_t* msg, wchar_t* headerMsg){

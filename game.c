@@ -49,6 +49,14 @@ static int social_fund;            // 사회복지기금
 
 int clnt_sock[4];
 
+int* tax(int curr_pos, int* arr) {
+    if(squares[curr_pos].buildings & B_HOTEL)     arr[0]++;
+    if(squares[curr_pos].buildings & B_BUILDING)  arr[1]++;
+    if(squares[curr_pos].buildings & B_VILLA)     arr[2]++;  
+    return arr;
+}
+
+
 void tempSocket() {
     int temp_port = 8080;       // 임시 PORT
      playerNum = 2;              // player 수
@@ -119,7 +127,6 @@ void start_game(int pnum, int clnt[4]) {
     }
 }
 
-
 void set_up(int num) {
     srand(time(NULL));
     state = 1;
@@ -129,6 +136,8 @@ void set_up(int num) {
         players[i].cash = 660*TUSD;
     }
 }
+
+
 
 void start_turn() {
     int curr_pos;
@@ -227,6 +236,9 @@ void roll_dice(int doubleNum) {
     // 주사위 결과 받음
     die1 = rand() % 6 + 1;
     die2 = rand() % 6 + 1;
+
+    die1 = 4;
+    die2 = 5;
 
     printf("die1: %d, die2: %d\n", die1, die2);
     if(die1 == die2) {
@@ -594,9 +606,17 @@ void arrived_golden_key(int curr_pos) {
             players[currPlayer].has_escape = true;
             sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
             break;
-        case 2: // 무인도 탈출권
-            players[currPlayer].has_escape = true;
-            sendGoldenKey(playerNum, currPlayer, 1, 0, 0, 0, 0, 0);
+        case 2: // 정기종합소득세
+            int arr[3] = {0,};
+            int t_tax = 0;
+            for(int i=0; i<TOTAL_SQR; i++) 
+                if(currPlayer == squares[i].owner)
+                    memcpy(arr, tax(i, arr), sizeof(int) * 3);
+            t_tax = arr[0] * 150 + arr[1] * 100 + arr[2] * 30;
+            if(players[currPlayer].cash < t_tax)
+                t_tax = players[currPlayer].cash;
+            players[currPlayer].cash -= t_tax;
+            sendGoldenKey(playerNum, currPlayer, card, t_tax, arr[0], arr[1], arr[2], players[currPlayer].cash);
             break;
         case 3: // 관광여행(제주)
             int jeju = 5;
@@ -638,13 +658,6 @@ void arrived_golden_key(int curr_pos) {
     recvPack(playerNum, currPlayer);
     if(card==3 || card==4 || card==5) 
         arrived_square(players[currPlayer].pos);
-}
-
-int* tax(int curr_pos, int* arr) {
-    if(squares[curr_pos].buildings & B_HOTEL)     arr[0]++;
-    if(squares[curr_pos].buildings & B_BUILDING)  arr[1]++;
-    if(squares[curr_pos].buildings & B_VILLA)     arr[2]++;  
-    return arr;
 }
 
 void shuffle() {

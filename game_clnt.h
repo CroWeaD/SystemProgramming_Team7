@@ -130,6 +130,11 @@ void drawLabel(wchar_t* text, int x, int y, int color);
 void showTextWithMoney(wchar_t* str, int money);
 void showText(wchar_t* str);
 void highlightPlayer(int player);
+void setSellLandContext(int priceNeed, int totalPrice);
+int loolLandsaleMenu(int pos, int needPrice, int landown, int list1, int list2, int list3, int list4);
+void highlightTileBlue(int index, bool highlight);
+void payTax(int fee);
+void getPrize(int money);
 
 int getX(int blockindex);
 int getY(int blockindex);
@@ -149,6 +154,7 @@ void reception(int money);
 void welfare(int money);
 void island(int remaining);
 int blackcard();
+void toll(int visitor, int owner, int price);
 
 void mainLoop(int serv_socket);
 void startGame(int player, int pcount);

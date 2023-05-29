@@ -241,6 +241,21 @@ void updateSaleMenu(int index){
     
     refresh();
 }
+void updateLandsaleMenu(int index, bool sellable){
+    clearContext();
+    setHeader(L"매각할 땅을 골라주세요. 'Enter'를 눌러 매각합니다.", true, COLOR_PAIR_DEAFULT);
+    setOkayButton(L"매각",sellable?COLOR_PAIR_HIGHLIGHT:COLOR_PAIR_DEAFULT);
+    refresh();
+}
+
+void toll(int visitor, int owner, int price){
+    if(owner == -1){
+        setTollContext(L"은행원",names[players[visitor].position],price);
+    }
+    else
+        setTollContext(players[owner].name,names[players[visitor].position],price);
+    getOneButton(L"확인");
+}
 
 void island(int remaining){                                 // 무인도
     wchar_t header[30];
@@ -284,6 +299,17 @@ int blackcard(){
 
 }
 
+void payTax(int fee){
+    setHeader(L"황금카드",true, COLOR_PAIR_HIGHLIGHT);
+    showTextWithMoney(L"정기종합소득세를 지불하세요!",fee);
+}
+
+void getPrize(int money){
+    setHeader(L"황금카드",true,COLOR_PAIR_HIGHLIGHT);
+    showTextWithMoney(L"노벨상을 수상했습니다!",money);
+    
+}
+
 void InitLandSaleMenu(int index, int buildinglist){
     enabled[4] = true;
     for(int i = 1;i<4;i++)
@@ -309,4 +335,146 @@ void InitLandSaleMenu(int index, int buildinglist){
     }
 
     updateSaleMenu(index);
+}
+
+
+int landsaleMenuMoveCursor(char dir, int landown, int landlist[4], bool checked_tile[28], bool sellable){
+    if(!checked_tile[currentCursor])
+        highlightTile(currentCursor,false);
+    switch(dir){
+        case UP:{
+            if(currentCursor>=w-1 && currentCursor<w+h-2){
+                currentCursor++;
+            }
+            else if(currentCursor>w+w+h-3){
+                currentCursor--;
+            }
+            else if(currentCursor == 0)
+                currentCursor = w+w+h+h-5;
+            break;
+        }
+        case DOWN:{
+            if(currentCursor>w-1 && currentCursor<=w+h-2){
+                currentCursor--;
+            }
+            else if(currentCursor>=w+w+h-3){
+                currentCursor++;
+                if(currentCursor == w+w+h+h-4)
+                    currentCursor = 0;
+            }
+            break;
+        }
+        case LEFT:{
+            if(currentCursor<w-1){
+                currentCursor++;
+            }
+            else if(currentCursor>w+h-2 && currentCursor<=w+w+h-3){
+                currentCursor--;
+            }
+            break;
+        }
+        case RIGHT:{
+            if(currentCursor<=w-1){
+                currentCursor--;
+            }
+            else if(currentCursor>=w+h-2 && currentCursor<w+w+h-3){
+                currentCursor++;
+            }
+            break;
+        }
+        case SPACEBAR:{
+            if(hasLand(currentCursor,landown)){
+                if(checked_tile[currentCursor]){
+                    highlightTile(currentCursor,true);
+                    return 2;
+                }
+                else{
+                    highlightTileBlue(currentCursor,true);
+                    return 3;
+                }
+            }
+            break;
+        }
+
+        case 'v':{
+            return 1;
+        }
+    }
+    if(checked_tile[currentCursor]){        
+        highlightTileBlue(currentCursor,true);
+    }
+    else
+        highlightTile(currentCursor,true);
+    return 0;
+}
+
+int getLandPrice(int index, const int landList[4]){
+    int arri = index/8;
+    int elemi = (index%8) * 4;
+    int bits = landList[arri]>>elemi;
+    int total = 0;
+    for(int i = 0;i<4;i++){
+        if(bits&1){
+            total += buildingPrice[index][i]/2;
+        }
+        bits>>=1;
+    }
+    return total;
+}
+
+int hasLand(int index, int binary){
+    return (binary&1<<index);
+}
+
+int loolLandsaleMenu(int pos, int needPrice, int landown, int list1, int list2, int list3, int list4){
+    bool checked_tile[28] = {false,};
+    int landOwn = landown;                    //binary
+    int landlist[4] = {list1,list2,list3,list4};                //4bit each
+    bool sellable = false;
+    int total = 0;
+
+    blockPos = pos;
+    currentCursor = pos;
+    int cmd = 0;
+    while(true){
+        updateLandsaleMenu(currentCursor,sellable);
+        setSellLandContext(needPrice, total);
+        cmd = landsaleMenuMoveCursor(getchar(),landOwn,landlist,checked_tile,sellable);
+        if(cmd == 2){
+            checked_tile[currentCursor] = false;
+            total -= getLandPrice(currentCursor,landlist);
+            highlightTileBlue(currentCursor,false);
+            highlightTile(currentCursor,true);
+        }
+        else if(cmd == 3){            
+            checked_tile[currentCursor] = true;
+            total += getLandPrice(currentCursor,landlist);
+            highlightTileBlue(currentCursor,true);
+        }
+
+        if(needPrice<= total){
+            sellable = true;
+        }
+        else{
+            sellable = false;
+        }
+        if(cmd == 1){
+            if(sellable)
+                break;
+        }
+    }
+    int result = 0;
+    int t = 1;
+    for(int i = 0;i<28;i++){
+        if(checked_tile[i]){
+            result += t;
+        }
+        t<<=1;
+    }
+    setHeader(L"",false,COLOR_PAIR_DEAFULT);
+
+    for(int i = 0;i<28;i++){
+        highlightTileBlue(i,false);
+    }
+    return result;
 }

@@ -328,6 +328,56 @@ void drawTile(int index){
     refresh();
 }
 
+void highlightTileBlue(int index, bool highlight){
+    int color;
+    int x,y;
+    x = getX(index);
+    y = getY(index);
+    if(highlight)
+        color = getHighlightColorPair(getBgColorByIndex(index))+ COLOR_PAIR_NUM;
+    else{
+        if(currentTurn == index){
+            color = getHighlightColorPair(getBgColorByIndex(index));
+        }
+        else{
+            color = getBgColorByIndex(index);
+        }
+    }
+    wattron(mainWindow, COLOR_PAIR(color));
+    int i;
+    if(highlight){
+        move(y,x+1);
+        addwstr(blockUpperHalfStr);
+    }
+    else{
+        move(y,x);
+        addstr(blockStr);
+    }
+    for(i = 0;i<blockh;i++){
+        if(highlight){
+            move(y+i,x);
+            addwstr(L"█");
+            move(y+i,x+blockw-1);
+            addwstr(L"█");
+        }
+        else{
+            move(y+i,x);
+            addstr(" ");
+            move(y+i,x+blockw-1);
+            addstr(" ");
+        }
+    }
+    if(highlight){
+        move(y+i-1,x+1);
+        addwstr(blockLowerHalfStr);
+    }
+    else{
+        move(y+i-1,x);
+        addstr(blockStr);
+    }
+
+}
+
 void highlightTile(int index, bool highlight){
     int color;
     int x,y;
@@ -518,6 +568,22 @@ void initiate(){
     init_pair(COLOR_PAIR_NUM * 5 + 13,COLOR_RED,BLOCK_P3_ALT_BACK);
     init_pair(COLOR_PAIR_NUM * 5 + 14,COLOR_RED,BLOCK_P4_BACK);
     init_pair(COLOR_PAIR_NUM * 5 + 15,COLOR_RED,BLOCK_P4_ALT_BACK);
+    
+    init_pair(COLOR_PAIR_NUM * 6 + 1,COLOR_BLUE,COLOR_BLACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 2,COLOR_BLUE,BLOCK_YELLOW_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 3,COLOR_BLUE,BLOCK_YELLOW_LIGHT_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 4,COLOR_BLUE,BLOCK_GRAY_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 5,COLOR_BLUE,BLOCK_GRAY_LIGHT_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 6,COLOR_BLUE,BLOCK_BLUE_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 7,COLOR_BLUE,BLOCK_GREEN_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 8,COLOR_BLUE,BLOCK_P1_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 9,COLOR_BLUE,BLOCK_P1_ALT_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 10,COLOR_BLUE,BLOCK_P2_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 11,COLOR_BLUE,BLOCK_P2_ALT_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 12,COLOR_BLUE,BLOCK_P3_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 13,COLOR_BLUE,BLOCK_P3_ALT_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 14,COLOR_BLUE,BLOCK_P4_BACK);
+    init_pair(COLOR_PAIR_NUM * 6 + 15,COLOR_BLUE,BLOCK_P4_ALT_BACK);
 }
 
 int getX(int blockindex){
@@ -826,4 +892,33 @@ void movePlayer(int movingID, int movingPosition){
         highlightTile(players[movingID].position,true);
         drawTile(movingPosition);
         drawTile(t);
+}
+
+void setSellLandContext(int priceNeed, int totalPrice){    
+    int width = 50;
+    int left = panel_x + (panel_width - width)/2;
+    wattron(mainWindow, COLOR_PAIR(COLOR_PAIR_DEAFULT));
+    move(panel_y + 9, left);
+    addwstr(L"┏━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");                  // width : 20
+    move(panel_y + 10, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 11, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 11, left+1);
+    printw(" 지불액 │ -￦%-15d",priceNeed);
+    move(panel_y + 12, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 13, left);
+    addwstr(L"┠────────┼───────────────────────────────────────┨");
+    move(panel_y + 14, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 15, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 15, left+1);
+    printw(" 매각액 │ ￦%-15d",totalPrice);
+    move(panel_y + 16, left);
+    addwstr(L"┃        │                                       ┃");
+    move(panel_y + 17, left);
+    addwstr(L"┗━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+    refresh();
 }

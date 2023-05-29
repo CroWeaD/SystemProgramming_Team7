@@ -41,6 +41,8 @@ void mainLoop(int serv_socket){
     while(true){
         get_response(&packet_recv,sock);
         process_packet(&packet_recv,sock);
+        if(packet_recv.type == 18)
+            break;
     }
     endGame();
 }
