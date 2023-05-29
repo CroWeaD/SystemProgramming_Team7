@@ -575,6 +575,7 @@ int login(int clnt_socket, PACKET* packet_ptr){
             //printf("ID: %s, PASSWORD: %s\n", packet_ptr->info.id, packet_ptr->info.password); //Debugging
             //check
             //id: 1, password: 2, username: 3
+            query = "SELECT * FROM user_tb";
             res = mysql_do_query(query);
                 
             while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
@@ -617,6 +618,7 @@ int login(int clnt_socket, PACKET* packet_ptr){
         else{
             //Sign up
             //id: 1, password: 2, username: 3
+            query = "SELECT * FROM user_tb";
             res = mysql_do_query(query);
             
             while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result

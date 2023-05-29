@@ -5,6 +5,11 @@
 > 이 프로젝트는 Server-Client 모델을 통해 사용자에게 Blue Marble 게임을 멀티플레이로 즐길 수 있는 서비스를 제공합니다.
 -------------
 ## MAKEFILE 실행 전 선행 조건  
+### Unbuntu: 22.04 version
+### ncursesw
+``` sh
+$ sudo apt-get install libncurses5-dev libncursesw5-dev
+```
 ### MYSQL 설치 및 실행 확인 (이미 설치되어 있으면 생략)
 ``` sh
 $ sudo apt-get update
@@ -214,6 +219,17 @@ Enter password: 0000 | [your_root_password]
 ![Server_Client_2](./Images/Server_Client_2.jpg)
 ------------
 ## Server 기능
-
+Server는 위의 구조에서 볼 수 있듯이 Game 실행, Client 연결 등의 서비스를 제공하며 Server 가동 이후 사용자가 추가로 동작시킬 기능은 없습니다.
 ------------
 ## Client 기능
+1-1. Sign-in
+[space] key로 sign in을 선택하여 ID, password를 입력한뒤 [space] key로 선택합니다.
+
+1-2. Sign-up
+회원가입 기능입니다. 마지막 버전에서 INSERT query가 동작하지 않아 최종 버전에서 제거하였습니다.
+
+2. Lobby
+W와 S키로 위아래 이동이 가능합니다. 그리고 들어가고 싶은 room을 [Enter] key로 결정합니다.
+
+3. Game
+Blue Marble Game 입니다. 각 플레이어는 각자의 턴에만 행동할 수 있습니다. 각자 턴에는 wasd key로 커서를 이동하고 [sapce] key로 선택을 할 수 있습니다.
