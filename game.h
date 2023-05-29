@@ -52,7 +52,7 @@ typedef struct Player {
     bool paid_for_sship;        // 우주왕복선 비용 지불 여부
 } Player;
 // game
-void start_game(int pnum, int clnt[4], char *clnt_names[]);
+void start_game(int pnum, int clnt[4], char *n1, char*n2, char*n3, char*n4) ;
 void set_up();
 void start_turn();
 void roll_dice(int doubleNum);

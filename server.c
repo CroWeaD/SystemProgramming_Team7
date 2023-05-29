@@ -391,7 +391,7 @@ void *game_maker(void* arg){
     }
 
     if(game_pids[room_id] == 0){  
-        char clnt_names[4][300];
+        char clnt_names[4][20];
         //SIGTERM handling 
         handler.sa_sigaction = sigterm_handler;  
         handler.sa_flags = SA_SIGINFO;
@@ -437,7 +437,8 @@ void *game_maker(void* arg){
                     read(game_clnt_list[0], &packet, sizeof(PACKET));    //read data from the first client
                     //lobby.user ...
                     printf("Lobby[%d] user: %d\n", packet.lobby_idx + 1, packet.lobby_List[room_id].users);
-                    strcpy(clnt_names[cnt - 1], packet.info.username);
+                    strncpy(clnt_names[cnt - 1], packet.info.username,20);
+                    clnt_names[cnt - 1][19] = '\0';
                 }
 
                 printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt-1]);
@@ -458,7 +459,8 @@ void *game_maker(void* arg){
             
             for(int i = 1; i < cnt; i++){
                 read(game_clnt_list[i], &packet, sizeof(PACKET));   //garbage
-                strcpy(clnt_names[i], packet.info.username);
+                strncpy(clnt_names[i], packet.info.username,20);
+                clnt_names[i][19] = '\0';
             }
             
             
@@ -468,7 +470,7 @@ void *game_maker(void* arg){
             printf("Game!\n");
             fflush(stdout);
 
-            start_game(cnt,game_clnt_list, clnt_names);
+            start_game(cnt,game_clnt_list, clnt_names[0],clnt_names[1],clnt_names[2],clnt_names[3]);
             //game();
             //Debug
 
@@ -863,4 +865,3 @@ int room(int clnt_socket, PACKET* packet_ptr){
     return SUCCESS;
 
 }
-

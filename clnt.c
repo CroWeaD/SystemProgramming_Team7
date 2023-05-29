@@ -23,7 +23,7 @@ void get_response(RECV_PACKET* packet,int sock){
 
 void set_data(){
     for(int i = 0;i<4;i++){
-        strncpy(players[i].name,init_packet.names[i],10);
+        strncpy(players[i].name,init_packet.names[i],20);
         players[i].position = 0;
         players[i].budget = 6600;
     }

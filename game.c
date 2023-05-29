@@ -102,7 +102,7 @@ void tempSocket() {
 //    tempSocket();
 //    start_game(2, clnt_sock);
 //}
-void start_game(int pnum, int clnt[4], char *clnt_names[]) {
+void start_game(int pnum, int clnt[4], char *n1, char*n2, char*n3, char*n4) {
 
     playerNum = pnum;
     for(int i=0; i<playerNum; i++)
@@ -112,10 +112,10 @@ void start_game(int pnum, int clnt[4], char *clnt_names[]) {
 
     //char name0[10] = "messi", name1[10] = "ronaldo", name2[10] = "mbappe", name3[10]="haland";
     char name0[20], name1[20], name2[20], name3[20];
-    strcpy(name0, clnt_names[0]);
-    strcpy(name1, clnt_names[1]);
-    strcpy(name2, clnt_names[2]);
-    strcpy(name3, clnt_names[3]);
+    strncpy(name0,n1,20);
+    strncpy(name1,n2,20);
+    strncpy(name2,n3,20);
+    strncpy(name3,n4,20);
 
     for(int i=0; i<playerNum; i++)
         sendName(playerNum, i, name0, name1, name2, name3);

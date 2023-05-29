@@ -8,7 +8,7 @@
 //essential
 char *server = "localhost";  //server path
 char *user = "root";    //user name#include </usr/include/mysql/mysql.h>
-char *password = "0000"; //password of the user
+char *password = "1q2w3e4r@@"; //password of the user
 
 //optional
 char *database = "BlueMarble";  //DataBase name
@@ -108,7 +108,7 @@ void my_connect(){
         perror("mysql_query() error!");
     }
     
-    query = "CREATE TABLE user_tb(useridx int primary key auto_increment, userid varchar(300) unique not null, userpw varchar(300) not null, username varchar(300) not null, userphone varchar(300), useremail varchar(300), regdate datetime default now());";
+    query = "CREATE TABLE user_tb(useridx int primary key auto_increment, userid varchar(300) unique not null, userpw varchar(300) not null, username varchar(300) not null, userphone varchar(300) not null, useremail varchar(300), regdate datetime default now());";
     
     if(mysql_query(conn, query)){
         //mysql_close(conn);

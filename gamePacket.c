@@ -41,13 +41,13 @@ void sendName(int playerNum, int currPlayer, char* name0, char* name1, char* nam
     memset(&name_send, 0, sizeof(name_send));
     name_send.player = currPlayer;
     name_send.playernum = playerNum;
-    memcpy(name_send.name0, name0, sizeof(char) * 10);
-    memcpy(name_send.name1, name1, sizeof(char) * 10);
-    memcpy(name_send.name2, name2, sizeof(char) * 10);
-    memcpy(name_send.name3, name3, sizeof(char) * 10);
+    memcpy(name_send.name0, name0, sizeof(char) * 20);
+    memcpy(name_send.name1, name1, sizeof(char) * 20);
+    memcpy(name_send.name2, name2, sizeof(char) * 20);
+    memcpy(name_send.name3, name3, sizeof(char) * 20);
     write(clnt_sock[currPlayer], (void*)&name_send, sizeof(name_send));
 
-    printf("sent name to %d player.\n",currPlayer);    
+    printf("sent name to %d player. name: %s, %s, %s, %s\n",currPlayer,name0,name1,name2,name3);    
 }
 
 //type 0

@@ -58,7 +58,8 @@ int main(int argc, char *argv[]){
     //Client Socket
     int game_sock;
     init_client(&sock);
-    strcpy(cur_user.username, login2(&sock));
+    strcpy(cur_user.username, login2(&sock));    
+    strcpy(packet.info.username,cur_user.username);
     printf("login success");
     setlocale(LC_CTYPE,"");
     initscr();
@@ -254,7 +255,7 @@ int login(int* arg){
             perror("read() error!");
 
         if(packet.result == SUCCESS){
-            strcpy(cur_user.username, packet.info.username);
+            strcpy(packet.info.username,cur_user.username);
             result = packet.result;
             sleep(1);
 
@@ -430,8 +431,8 @@ void game(int* arg){
     if(connect(*game_sock, (struct sockaddr*) &game_addr, sizeof(game_addr)) == -1)
         perror("connect() error!");
 
+    write(*game_sock, &packet, sizeof(PACKET));
     while(state != QUIT){
-        write(*game_sock, &packet, sizeof(PACKET));
         stop_wait(3);   //for accesible test
 
         mainLoop(*game_sock);

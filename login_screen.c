@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <string.h>
 #include "packet.h"
+#include <locale.h>
 
 #define LEFT 'a'
 #define RIGHT 'd'
@@ -32,6 +33,8 @@ int signUp(WINDOW* win, int serv_sock);
 
 char* login2(int* arg) {
     //int *arg;
+    
+    setlocale(LC_CTYPE,"");
     int serv_sock = *arg;
     // ncurses 초기화
     initscr();

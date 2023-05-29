@@ -12,10 +12,10 @@
 typedef struct Name_Send {
     int player;
     int playernum;
-    char name0[10];
-    char name1[10];
-    char name2[10];
-    char name3[10];
+    char name0[20];
+    char name1[20];
+    char name2[20];
+    char name3[20];
 } Name_Send;
 
 // 발신 패킷

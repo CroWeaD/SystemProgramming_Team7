@@ -9,7 +9,7 @@
 
 typedef struct{
     int budget;
-    char name[10];
+    char name[20];
     int position;
 }Player;
 
@@ -27,7 +27,7 @@ typedef struct SEND_PACKET{
 typedef struct INIT_PACKET{
     int player;
     int player_num;
-    char names[4][10];
+    char names[4][20];
 } INIT_PACKET;
 
 #define COLOR_PAIR_NUM 16
