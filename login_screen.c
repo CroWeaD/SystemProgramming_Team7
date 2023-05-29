@@ -30,8 +30,8 @@ int start_screen(WINDOW* win);
 int signIn(WINDOW* win, int serv_sock);
 int signUp(WINDOW* win);
 
-int main() {
-    int *arg;
+char* login2(int* arg) {
+    //int *arg;
     int serv_sock = *arg;
     // ncurses 초기화
     initscr();
