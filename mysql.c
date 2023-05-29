@@ -8,7 +8,7 @@
 //essential
 char *server = "localhost";  //server path
 char *user = "root";    //user name#include </usr/include/mysql/mysql.h>
-char *password = "1q2w3e4r@@"; //password of the user
+char *password = "0000"; //password of the user
 
 //optional
 char *database = "BlueMarble";  //DataBase name
