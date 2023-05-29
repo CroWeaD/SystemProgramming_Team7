@@ -360,19 +360,19 @@ void arrived_city(int type, int curr_pos) {
                         /*RECV PACKET*/
                         recvPack(playerNum, currPlayer);
                     }
-                } else {                                    // 영끌 불가능할 경우
-                    if(!players[currPlayer].has_loan) {        // 대출한 적이 없으면
-                        players[currPlayer].has_loan = true;
-                        players[currPlayer].cash = 0;
-                        players[squares[curr_pos].owner].cash += total_toll;
-                        printf("대출\n");
-                        sendLoanMsg(playerNum, currPlayer);
-                    } else {
+                }
+            } else {                                    // 영끌 불가능할 경우
+                if(!players[currPlayer].has_loan) {        // 대출한 적이 없으면
+                    players[currPlayer].has_loan = true;
+                    players[currPlayer].cash = 0;
+                    players[squares[curr_pos].owner].cash += total_toll;
+                    printf("대출\n");
+                    sendLoanMsg(playerNum, currPlayer);
+                } else {
 
-                        players[currPlayer].cash -= total_toll;
-                        bankruptcy(currPlayer);
-                        return;
-                    }
+                    players[currPlayer].cash -= total_toll;
+                    bankruptcy(currPlayer);
+                    return;
                 }
             }
         }
