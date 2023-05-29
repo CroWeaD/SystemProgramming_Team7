@@ -30,8 +30,8 @@ int start_screen(WINDOW* win);
 int signIn(WINDOW* win, int serv_sock);
 int signUp(WINDOW* win);
 
-char* login2(int* arg) {
-    //int *arg;
+int main() {
+    int *arg;
     int serv_sock = *arg;
     // ncurses 초기화
     initscr();
@@ -130,14 +130,14 @@ int signIn(WINDOW* win, int serv_sock) {
     wmove(win, 6, 6);
 
     // 입력 받기
-    wint_t id[20];
-    wint_t pw[20];
+    char id[20];
+    char pw[20];
     echo();
     curs_set(1);
-    wgetn_wstr(win, id, 20);
+    wgetstr(win,id);
     wmove(win, 8, 6);
     wrefresh(win);
-    wgetn_wstr(win, pw, 20);
+    wgetstr(win,pw);
     curs_set(0);
     noecho();
     
@@ -156,13 +156,12 @@ int signIn(WINDOW* win, int serv_sock) {
             choice = BACK;
         } else if(ch==SPACEBAR) {
             if(choice == CONTINUE) {
-                /*
+                
                 write(serv_sock, &packet, sizeof(PACKET));
 
                 if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
                     perror("read() error!");  
-                */
-                packet.result = 1;
+            
                 if(packet.result == SUCCESS){
                     strcpy(username, packet.info.username);
                 } else {
