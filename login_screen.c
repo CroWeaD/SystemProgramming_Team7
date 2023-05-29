@@ -165,6 +165,8 @@ int signIn(WINDOW* win, int serv_sock) {
                 if(packet.result == SUCCESS){
                     strcpy(username, packet.info.username);
                 } else {
+                    mvwprintw(win, 2, 11, packet.message);
+                    sleep(1);
                     choice = SIGNIN;
                 }
             }
