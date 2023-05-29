@@ -161,11 +161,13 @@ int signIn(WINDOW* win, int serv_sock) {
 
                 if((readlen = read(serv_sock, &packet, sizeof(PACKET))) == -1)
                     perror("read() error!");  
-            
+
                 if(packet.result == SUCCESS){
                     strcpy(username, packet.info.username);
                 } else {
+                    mvwprintw(win, 2, 11, BLANK);
                     mvwprintw(win, 2, 11, packet.message);
+                    wrefresh(win);
                     sleep(1);
                     choice = SIGNIN;
                 }
