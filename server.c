@@ -391,6 +391,7 @@ void *game_maker(void* arg){
     }
 
     if(game_pids[room_id] == 0){  
+        char clnt_names[4][300];
         //SIGTERM handling 
         handler.sa_sigaction = sigterm_handler;  
         handler.sa_flags = SA_SIGINFO;
@@ -436,9 +437,12 @@ void *game_maker(void* arg){
                     read(game_clnt_list[0], &packet, sizeof(PACKET));    //read data from the first client
                     //lobby.user ...
                     printf("Lobby[%d] user: %d\n", packet.lobby_idx + 1, packet.lobby_List[room_id].users);
+                    strcpy(clnt_names[cnt - 1], packet.info.username);
                 }
 
                 printf("cnt: %d, %d\n", cnt, game_clnt_list[cnt-1]);
+                read(game_clnt_list[cnt - 1], &packet, sizeof(PACKET));   //garbage
+                strcpy(clnt_names[cnt - 1], packet.info.username);
                 
                 if(cnt == packet.lobby_List[room_id].users){
                     break;
@@ -453,17 +457,19 @@ void *game_maker(void* arg){
                 //printf("@\n");
                 fflush(stdout);
             }
-
+            /*
             for(int i = 1; i < cnt; i++){
                 read(game_clnt_list[i], &packet, sizeof(PACKET));   //garbage
             }
+            */
+            
   
             //Run Game
 
             printf("Game!\n");
             fflush(stdout);
 
-            start_game(cnt,game_clnt_list);
+            start_game(cnt,game_clnt_list, clnt_names);
             //game();
             //Debug
 
@@ -564,47 +570,83 @@ int login(int clnt_socket, PACKET* packet_ptr){
             return QUIT;
         }
 
-        //printf("ID: %s, PASSWORD: %s\n", packet_ptr->info.id, packet_ptr->info.password); //Debugging
-        //check
-        //id: 1, password: 2, username: 3
-        res = mysql_do_query(query);
-            
-        while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
-            //printf("%s %s %s\n", row[1], row[2], row[3]);
-            if(strcmp(row[1], packet_ptr->info.id) == 0){
-                if(strcmp(row[2], packet_ptr->info.password) == 0){
-                    //valid ID, password
-                    if(check_duplication(clnt_socket, row[3]) == 0){
-                        strcpy(packet_ptr->info.username, row[3]);
-                        packet_ptr->result = SUCCESS;
-                        printf("User %s, login success!\n", row[3]);
+        if(strcmp("LOGIN", packet_ptr->info.username) == 0){
+            //printf("ID: %s, PASSWORD: %s\n", packet_ptr->info.id, packet_ptr->info.password); //Debugging
+            //check
+            //id: 1, password: 2, username: 3
+            res = mysql_do_query(query);
+                
+            while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
+                //printf("%s %s %s\n", row[1], row[2], row[3]);
+                if(strcmp(row[1], packet_ptr->info.id) == 0){
+                    if(strcmp(row[2], packet_ptr->info.password) == 0){
+                        //valid ID, password
+                        if(check_duplication(clnt_socket, row[3]) == 0){
+                            strcpy(packet_ptr->info.username, row[3]);
+                            packet_ptr->result = SUCCESS;
+                            printf("User %s, login success!\n", row[3]);
 
-                        if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
-                            perror("write() error!");
+                            if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
+                                perror("write() error!");
 
-                        mysql_free_result(res);
-                        return SUCCESS;
+                            mysql_free_result(res);
+                            return SUCCESS;
+                        }
+                        else if(check_duplication(clnt_socket, row[3]) == 1){
+                            packet_ptr->result = FAIL;
+                            strcpy(packet_ptr->message, "The user is already logged in.\n");
+                            break;
+                        }
                     }
-                    else if(check_duplication(clnt_socket, row[3]) == 1){
+                }
+                else{
+                    strcpy(packet_ptr->message, "Wrong ID or Password. Please try again.\n");
+                    packet_ptr->result = FAIL;
+                }
+            }
+
+            mysql_free_result(res);
+            res = NULL;
+            printf("Login Failed!\n");
+            printf("%s %s %d\n", packet_ptr->message, packet_ptr->info.username, packet_ptr->result);
+
+            if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
+                perror("write() error!");
+        }
+        else{
+            //Sign up
+            //id: 1, password: 2, username: 3
+            res = mysql_do_query(query);
+            
+            while((row = mysql_fetch_row(res))){   //MYSQL_ROW *mysql_fetch_row(MYSQL_RES *res)    -> get a row from the result
+                //printf("%s %s %s\n", row[1], row[2], row[3]);
+                if(strcmp(row[3], packet_ptr->info.username) == 0){
+                    if(strcmp(row[2], packet_ptr->info.password) == 0 && strcmp(row[1], packet_ptr->info.id) == 0){
                         packet_ptr->result = FAIL;
-                        strcpy(packet_ptr->message, "The user is already logged in.\n");
+                        break;
+                    }
+                    else{
+                        char temp[300];
+                        sprintf(temp, "INSERT INTO user_tb (userid, userpw, username) values ('%s', '%s', '%s')", packet_ptr->info.id, packet_ptr->info.password, packet_ptr->info.username);
+                        query = temp;
+                        mysql_do_query(query);
+                        packet_ptr->result = SUCCESS;
                         break;
                     }
                 }
+                else{
+                    packet_ptr->result = FAIL;
+                }
             }
-            else{
-                strcpy(packet_ptr->message, "Wrong ID or Password. Please try again.\n");
-                packet_ptr->result = FAIL;
+
+            mysql_free_result(res);
+            res = NULL;
+            printf("Login Failed!\n");
+            printf("%s %s %d\n", packet_ptr->message, packet_ptr->info.username, packet_ptr->result);
+
+            if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
+                perror("write() error!");
             }
-        }
-
-        mysql_free_result(res);
-        res = NULL;
-        printf("Login Failed!\n");
-        printf("%s %s %d\n", packet_ptr->message, packet_ptr->info.username, packet_ptr->result);
-
-        if(write(clnt_socket, packet_ptr, sizeof(PACKET)) != readlen)
-            perror("write() error!");
     }
 }
 
@@ -822,67 +864,4 @@ int room(int clnt_socket, PACKET* packet_ptr){
     return SUCCESS;
 
 }
-/*
-void game(int clnt_socket, PACKET* packet_ptr){
-
-    int new_serv_sock, new_clnt_sock;
-    struct sockaddr_in new_serv_adr, clnt_adr;
-    int clnt_adr_sz = sizeof(clnt_adr);
-    int option, optlen;
-
-    pid_t pid;
-
-    printf("Game!\n");
-    printf("Id: \n");
-
-    pthread_mutex_lock(&mutex);
-    if(game_on_socket[packet_ptr->lobby_idx] == 0){
-        pid = fork();
-        game_on_socket[packet_ptr->lobby_idx] = 1;
-    }
-    pthread_mutex_unlock(&mutex);
-
-    if(pid == 0){
-
-        printf("New Socket!! %d\n",lobby_list[packet_ptr->lobby_idx].port );
-        //game
-        new_serv_sock = socket(PF_INET, SOCK_STREAM, 0);
-
-        optlen = sizeof(option);
-        option = 1;
-        setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, &option, optlen);   //set SO_REUSEADDR
-
-        memset(&new_serv_adr, 0, sizeof(new_serv_adr));
-        new_serv_adr.sin_family = AF_INET;
-        new_serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
-        new_serv_adr.sin_port = htons(lobby_list[packet_ptr->lobby_idx].port);
-
-        if(bind(new_serv_sock, (struct sockaddr*) &new_serv_adr, sizeof(new_serv_adr)) == -1){
-            perror("bind() error!");
-            exit(1);
-        }
-            
-        if(listen(new_serv_sock, 5) == -1){
-            perror("listen() error!");
-            exit(1);
-        }
-        
-        new_clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_adr, (socklen_t*) &clnt_adr_sz);
-
-        printf("New server!!\n");
-    }
-    else{
-        printf("New Socket parent\n");
-    }  
-
-    pthread_mutex_lock(&mutex);
-
-    if(game_on_socket[packet_ptr->lobby_idx] == 1){
-        printf("Game end!\n"); 
-        game_on_socket[packet_ptr->lobby_idx] = 0;
-    }
-
-    pthread_mutex_unlock(&mutex);
-}
-*/
 
