@@ -19,7 +19,7 @@
 #define COLOR_PAIR_DEAFULT 1
 #define COLOR_PAIR_DEFAULT_REVERSE 2
 
-static enum State{BACK=0, INIT=0, SIGNIN, SIGNUP, CONTINUE};
+static enum State_longin{BACK=0, INIT=0, SIGNIN, SIGNUP, CONTINUE};
 
 void startHighlight(WINDOW* win, int choice, char* str1, int x1, int y1, char* str2, int x2, int y2, int c1, int c2);
 int start_screen(WINDOW* win);
@@ -35,7 +35,7 @@ int login2(int *arg) {
     noecho();
     curs_set(0);
 
-    enum State state = INIT;
+    enum State_longin state = INIT;
     int flag = 1;
 
     // 색상 설정
