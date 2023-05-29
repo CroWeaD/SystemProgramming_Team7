@@ -237,9 +237,6 @@ void roll_dice(int doubleNum) {
     die1 = rand() % 6 + 1;
     die2 = rand() % 6 + 1;
 
-    die1 = 4;
-    die2 = 5;
-
     printf("die1: %d, die2: %d\n", die1, die2);
     if(die1 == die2) {
         doubleNum += 1;
@@ -594,7 +591,7 @@ void arrived_golden_key(int curr_pos) {
         shuffle();
     int card = golden_keys[pivot++];
     int move;
-    
+    int jeju = 5; int busan = 17; int seoul = 27;
     printf("golden key: %d\n", card);
     /*SEND PACKET*/
     switch(card) {
@@ -607,33 +604,22 @@ void arrived_golden_key(int curr_pos) {
             sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
             break;
         case 2: // 정기종합소득세
-            int arr[3] = {0,};
-            int t_tax = 0;
-            for(int i=0; i<TOTAL_SQR; i++) 
-                if(currPlayer == squares[i].owner)
-                    memcpy(arr, tax(i, arr), sizeof(int) * 3);
-            t_tax = arr[0] * 150 + arr[1] * 100 + arr[2] * 30;
-            if(players[currPlayer].cash < t_tax)
-                t_tax = players[currPlayer].cash;
-            players[currPlayer].cash -= t_tax;
-            sendGoldenKey(playerNum, currPlayer, card, t_tax, arr[0], arr[1], arr[2], players[currPlayer].cash);
+            players[currPlayer].has_escape = true;
+            sendGoldenKey(playerNum, currPlayer, card, 0, 0, 0, 0, 0);
             break;
         case 3: // 관광여행(제주)
-            int jeju = 5;
             move = curr_pos > jeju ? TOTAL_SQR - curr_pos + jeju : jeju - curr_pos;
             curr_pos = jeju;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, jeju, players[currPlayer].cash, 0, 0, 0);
             break;
         case 4: // 관광여행(부산)
-            int busan = 17;
             move = curr_pos > busan ? TOTAL_SQR - curr_pos + busan : busan - curr_pos;
             curr_pos = busan;
             move_player(move);
             sendGoldenKey(playerNum, currPlayer, card, busan, players[currPlayer].cash, 0, 0, 0);
             break;
         case 5: // 관광여행(서울)
-            int seoul = 27;
             move = curr_pos > seoul ? TOTAL_SQR - curr_pos + seoul : seoul - curr_pos;
             curr_pos = seoul;
             move_player(move);

@@ -55,6 +55,7 @@ void sendChooseLand2Sell(int playerNum, int currPlayer, int curr_pos, int cost, 
 void sendAskTravel(int playerNum, int currPlayer, int host, int cost); 
 void sendWhere2Travel(int playerNum, int currPlayer);
 void sendIslandEscape(int playerNum, int currPlayer, bool escape, int remaining);
+void sendIslandDiceWait(int playerNum, int currPlayer, int remain);
 void sendIslandDiceResult(int playerNum, int currPlayer, int die1, int die2, int moveto);
 void sendReceivingFunds(int playerNum, int currPlayer, int fund, int playerCash);
 void sendDonation(int playerNum, int currPlayer, int donation, int fund, int playerCash);
