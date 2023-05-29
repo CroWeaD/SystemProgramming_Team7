@@ -65,7 +65,7 @@ typedef struct PACKET{
     //Game game;
 }PACKET;
 
-//char* login2(int* arg);
+char* login2(int* arg);
 //player char*
 //type int 1개
 //주사위 int 2개
